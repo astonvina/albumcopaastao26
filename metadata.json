@@ -1,0 +1,6 @@
+{
+  "name": "Copa Astão 2026 - Álbum Oficial",
+  "description": "Álbum Oficial de Figurinhas da Copa Astão 2026. Sistema de Contas de Jogadores, Créditos de Pacotes e Gerenciamento do Álbum.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
