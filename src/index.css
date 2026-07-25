@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anton", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Custom colors matching Copa Astão */
+  --color-brand-blue: #0099D6;
+  --color-brand-blue-glow: #4FA8F4;
+  --color-brand-gold: #E5B80B;
+  --color-brand-gold-glow: #FECF2E;
+  --color-brand-silver: #C0C0C0;
+  --color-brand-dark: #0F0F0F;
+  --color-brand-surface: #131313;
+  --color-brand-surface-card: #1C1B1B;
+  --color-brand-red: #EF4444;
+}
+
+/* Custom global styles to enhance the UT Pack Opening experience */
+body {
+  background-color: var(--color-brand-dark);
+  color: #e5e2e1;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3e4850;
+}
+
+/* UT-style Holographic shiny effect */
+.holo-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 200% 200%;
+  animation: shine 3s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    background-position: -200% -200%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+/* Shimmer animation for empty slots */
+@keyframes pulse-shimmer {
+  0%, 100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.pulse-shimmer {
+  animation: pulse-shimmer 2s infinite ease-in-out;
+}
+

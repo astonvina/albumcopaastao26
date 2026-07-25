@@ -1,0 +1,726 @@
+{
+  "admins": [
+    {
+      "id": "admin-1",
+      "username": "admin",
+      "passwordHash": "copa2026"
+    }
+  ],
+  "stickers": [
+    {
+      "id": "BRA-01",
+      "number": "BRA-01",
+      "name": "Sube",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784136429079-ww483c.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "BRA-02",
+      "number": "BRA-02",
+      "name": "Soldado",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784138340987-tmwjrt.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "BRA-03",
+      "number": "BRA-03",
+      "name": "Guilherme Pinheiro",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784136487166-6vvl61.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "BRA-04",
+      "number": "BRA-04",
+      "name": "Hélder",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784138352362-n7daq9.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "BRA-05",
+      "number": "BRA-05",
+      "name": "Enzo ",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784136558420-4qk3oj.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "BRA-06",
+      "number": "BRA-06",
+      "name": "Adrian Baranhuk",
+      "team": "Time Branco",
+      "image": "/uploads/img-1784136576925-c31qit.png",
+      "color": "#FFFFFF",
+      "rarity": "Normal",
+      "description": ""
+    },
+    {
+      "id": "PRE-01",
+      "number": "PRE-01",
+      "name": "Vitor Tanque",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136605692-2cfs8r.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Centroavante de muita força física que joga de pivô."
+    },
+    {
+      "id": "PRE-02",
+      "number": "PRE-02",
+      "name": "Gabriel Raio",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136627313-76t78g.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Extrema com velocidade máxima e arrancadas imparáveis."
+    },
+    {
+      "id": "PRE-03",
+      "number": "PRE-03",
+      "name": "Henrique Motor",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136639431-hne2et.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Meio-campo aguerrido que corre o campo todo marcando."
+    },
+    {
+      "id": "PRE-04",
+      "number": "PRE-04",
+      "name": "Mateus Xerife",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136651907-yakmdx.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Zagueiro central imponente com desarme preciso por baixo."
+    },
+    {
+      "id": "PRE-05",
+      "number": "PRE-05",
+      "name": "Daniel Apoio",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136671857-zgmaxa.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Lateral tático de cruzamentos cirúrgicos na grande área."
+    },
+    {
+      "id": "PRE-06",
+      "number": "PRE-06",
+      "name": "Goleiro Sombra",
+      "team": "Time Preto",
+      "image": "/uploads/img-1784136849172-abykkt.png",
+      "color": "#1A1A1A",
+      "rarity": "Normal",
+      "description": "Goleiro de posicionamento excelente e saída de bola refinada."
+    },
+    {
+      "id": "AZU-01",
+      "number": "AZU-01",
+      "name": "Denner Jesus",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136703591-zoer9w.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "Visão de jogo periférica e passes que quebram linhas."
+    },
+    {
+      "id": "AZU-02",
+      "number": "AZU-02",
+      "name": "Bruno Canhão",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136723442-8c6sob.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "Dono de uma canhota avassaladora em cobranças de falta."
+    },
+    {
+      "id": "AZU-03",
+      "number": "AZU-03",
+      "name": "Nicolas Técnico",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136739257-yewasm.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "Zagueiro construtor com excelente qualidade de passe."
+    },
+    {
+      "id": "AZU-04",
+      "number": "AZU-04",
+      "name": "Caio Driblador",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136751774-0v046y.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "O rei dos dribles em curto espaço físico. Improviso puro."
+    },
+    {
+      "id": "AZU-05",
+      "number": "AZU-05",
+      "name": "Rodrigo Firme",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136860560-ywh2qc.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "Defensor polivalente que atua em qualquer setor da zaga."
+    },
+    {
+      "id": "AZU-06",
+      "number": "AZU-06",
+      "name": "Igor Felino",
+      "team": "Time Azul",
+      "image": "/uploads/img-1784136891144-jk9r8u.png",
+      "color": "#4FA8F4",
+      "rarity": "Normal",
+      "description": "Reflexos impressionantes à queima-roupa sob as traves."
+    },
+    {
+      "id": "VER-01",
+      "number": "VER-01",
+      "name": "Chummy",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784136923872-nx53rr.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Faro de gol apurado. Sempre bem posicionado na área."
+    },
+    {
+      "id": "VER-02",
+      "number": "VER-02",
+      "name": "Nathan",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784136938806-c4isd4.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Cão de caça do meio de campo que não dá espaços."
+    },
+    {
+      "id": "VER-03",
+      "number": "VER-03",
+      "name": "Leonardo Torre",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784136955927-8jez8p.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Poder aéreo imbatível tanto no ataque quanto na defesa."
+    },
+    {
+      "id": "VER-04",
+      "number": "VER-04",
+      "name": "Samuel Meia",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784136966904-jyuhbw.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Infiltra na área de surpresa e tem ótima finalização."
+    },
+    {
+      "id": "VER-05",
+      "number": "VER-05",
+      "name": "Thiago Turbo",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784137143897-1fr5ki.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Aceleração vertical esmagadora pelas alas do campo."
+    },
+    {
+      "id": "VER-06",
+      "number": "VER-06",
+      "name": "Marcos Muralha",
+      "team": "Time Vermelho",
+      "image": "/uploads/img-1784137155678-w03uf9.png",
+      "color": "#EF4444",
+      "rarity": "Normal",
+      "description": "Segurança absoluta nas saídas aéreas e liderança vocal."
+    },
+    {
+      "id": "LEG-01",
+      "number": "LEG-01",
+      "name": "Diego Rivas",
+      "team": "Legends",
+      "image": "/uploads/img-1784137002154-8k2hrv.png",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "Mão de Ferro - Goleiro lendário de defesas impossíveis em finais."
+    },
+    {
+      "id": "LEG-02",
+      "number": "LEG-02",
+      "name": "Leo Silva",
+      "team": "Legends",
+      "image": "/uploads/img-1784137015715-iw6d1p.png",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "O Capitão - Legendary Striker, o maior goleador da história da Copa."
+    },
+    {
+      "id": "LEG-03",
+      "number": "LEG-03",
+      "name": "Mestre Astão",
+      "team": "Legends",
+      "image": "",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "O criador e lenda máxima da competição. Técnica incomparável."
+    },
+    {
+      "id": "LEG-04",
+      "number": "LEG-04",
+      "name": "Ronaldinho Astão",
+      "team": "Legends",
+      "image": "",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "Magia pura nos pés e alegria contagiante em campo."
+    },
+    {
+      "id": "LEG-05",
+      "number": "LEG-05",
+      "name": "Neymar Astão",
+      "team": "Legends",
+      "image": "",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "O rei dos dribles mágicos e jogadas plásticas geniais."
+    },
+    {
+      "id": "LEG-06",
+      "number": "LEG-06",
+      "name": "Kaiser Astão",
+      "team": "Legends",
+      "image": "",
+      "color": "#E5B80B",
+      "rarity": "Legend",
+      "description": "Defensor supremo e lendário que parou os melhores ataques."
+    }
+  ],
+  "stickerPacks": [],
+  "probabilitySettings": {
+    "normalProbability": 85,
+    "legendProbability": 15
+  },
+  "systemSettings": {
+    "countdownDate": "2026-07-20T05:43:55.480Z",
+    "activeChampionshipId": "copa-astao-2026",
+    "initialFreePacks": 1
+  },
+  "logs": [
+    {
+      "id": "log-u03rp6byg",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou +1 pacote(s) (free) para 'PH'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T21:00:08.914Z"
+    },
+    {
+      "id": "log-fotu34ycf",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou +1 pacote(s) (free) para 'Nathan'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T21:00:02.536Z"
+    },
+    {
+      "id": "log-a39alcp73",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -10 pacote(s) (purchased) para 'PH'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:59:53.702Z"
+    },
+    {
+      "id": "log-5sailxur1",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -10 pacote(s) (purchased) para 'Nathan'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:41:42.504Z"
+    },
+    {
+      "id": "log-coz8p8ydc",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -1 pacote(s) (purchased) para 'China'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:41:01.439Z"
+    },
+    {
+      "id": "log-7hy7ldnf4",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou +1 pacote(s) (free) para 'China'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:40:53.660Z"
+    },
+    {
+      "id": "log-tfhlwq809",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -9 pacote(s) (purchased) para 'China'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:40:46.045Z"
+    },
+    {
+      "id": "log-6i9gzp1pe",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -2 pacote(s) (free) para 'Chummy'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:53.908Z"
+    },
+    {
+      "id": "log-5yx2tuxrm",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou -12 pacote(s) (purchased) para 'Chummy'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:37.961Z"
+    },
+    {
+      "id": "log-6f2uhugbx",
+      "action": "PACK_CREDIT_ADJUSTED",
+      "details": "Admin 'Admin' alterou +1 pacote(s) (free) para 'Chummy'. Motivo: Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:19.079Z"
+    },
+    {
+      "id": "log-3wr66xwif",
+      "action": "PLAYER_CREATED",
+      "details": "Jogador criado: Denner Jesus (DENNER)",
+      "createdAt": "2026-07-21T20:37:54.438Z"
+    },
+    {
+      "id": "log-ivspi2r5b",
+      "action": "PLAYER_UPDATED",
+      "details": "Dados do jogador 'China' foram atualizados.",
+      "createdAt": "2026-07-21T20:37:06.390Z"
+    },
+    {
+      "id": "log-on96a3at5",
+      "action": "PLAYER_CREATED",
+      "details": "Jogador criado: Anderson Souza (SUBE)",
+      "createdAt": "2026-07-21T20:36:40.750Z"
+    },
+    {
+      "id": "log-d2wwb0mvl",
+      "action": "ADMIN_LOGIN_SUCCESS",
+      "details": "Admin 'admin' logado com sucesso.",
+      "createdAt": "2026-07-21T20:35:51.893Z"
+    },
+    {
+      "id": "log-rpd222sm0",
+      "action": "ADMIN_LOGIN_FAILED",
+      "details": "Tentativa de login de Admin inválida para 'ADMIN'.",
+      "createdAt": "2026-07-21T20:35:46.166Z"
+    },
+    {
+      "id": "log-mie9n03u7",
+      "action": "PROBABILITY_SETTINGS_UPDATED",
+      "details": "Novas probabilidades: Normais = 85%, Legends = 15%",
+      "createdAt": "2026-07-21T19:30:17.273Z"
+    },
+    {
+      "id": "log-1inmyjeyi",
+      "action": "PROBABILITY_SETTINGS_UPDATED",
+      "details": "Novas probabilidades: Normais = 91%, Legends = 9%",
+      "createdAt": "2026-07-21T19:13:37.793Z"
+    },
+    {
+      "id": "log-wf0myv7gb",
+      "action": "SYSTEM_RESET",
+      "details": "O sistema e o álbum de figurinhas foram resetados pelo administrador.",
+      "createdAt": "2026-07-21T19:12:50.870Z"
+    }
+  ],
+  "players": [
+    {
+      "id": "player-chummy",
+      "fullName": "Chummy Atleta",
+      "nickname": "Chummy",
+      "accessCode": "CHUMMY",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Vermelho",
+      "photoUrl": "/uploads/img-1784136923872-nx53rr.png",
+      "status": "active",
+      "purchasedPacks": 0,
+      "freePacks": 1,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-china",
+      "fullName": "China Atleta",
+      "nickname": "China",
+      "accessCode": "CHINA",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Vermelho",
+      "photoUrl": "/uploads/img-1784136429079-ww483c.png",
+      "status": "active",
+      "purchasedPacks": 0,
+      "freePacks": 1,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-nathan",
+      "fullName": "Nathan Atleta",
+      "nickname": "Nathan",
+      "accessCode": "NATHAN",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Vermelho",
+      "photoUrl": "/uploads/img-1784136938806-c4isd4.png",
+      "status": "active",
+      "purchasedPacks": 0,
+      "freePacks": 1,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-ph",
+      "fullName": "Paulo Henrique",
+      "nickname": "PH",
+      "accessCode": "PH",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Azul",
+      "photoUrl": "/uploads/img-1784136703591-zoer9w.png",
+      "status": "active",
+      "purchasedPacks": 0,
+      "freePacks": 1,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-pods",
+      "fullName": "Pods Atleta",
+      "nickname": "Pods",
+      "accessCode": "PODS",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Preto",
+      "photoUrl": "/uploads/img-1784136605692-2cfs8r.png",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-adrian",
+      "fullName": "Adrian Baranhuk",
+      "nickname": "Adrian",
+      "accessCode": "ADRIAN",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Branco",
+      "photoUrl": "/uploads/img-1784136576925-c31qit.png",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-dias",
+      "fullName": "Dias Atleta",
+      "nickname": "Dias",
+      "accessCode": "DIAS",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Azul",
+      "photoUrl": "/uploads/img-1784136739257-yewasm.png",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-cruz",
+      "fullName": "Cruz Atleta",
+      "nickname": "Cruz",
+      "accessCode": "CRUZ",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Preto",
+      "photoUrl": "/uploads/img-1784136651907-yakmdx.png",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:35:24.944Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-7crq5n2wk",
+      "fullName": "Anderson Souza",
+      "nickname": "Sube",
+      "accessCode": "SUBE",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Branco",
+      "photoUrl": "",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:36:40.750Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    },
+    {
+      "id": "player-mp5f5psst",
+      "fullName": "Denner Jesus",
+      "nickname": "Denner",
+      "accessCode": "DENNER",
+      "passwordHash": null,
+      "hasPassword": false,
+      "team": "Time Azul",
+      "photoUrl": "",
+      "status": "active",
+      "purchasedPacks": 10,
+      "freePacks": 0,
+      "collectedStickers": {},
+      "completedAlbum": false,
+      "createdAt": "2026-07-21T20:37:54.438Z",
+      "lastAccessAt": null,
+      "championshipId": "copa-astao-2026"
+    }
+  ],
+  "championships": [
+    {
+      "id": "copa-astao-2026",
+      "name": "Copa Astão 2026",
+      "year": 2026,
+      "status": "active",
+      "createdAt": "2026-07-21T20:35:46.166Z"
+    }
+  ],
+  "packCreditLogs": [
+    {
+      "id": "log-vdvsjr6os",
+      "playerId": "player-ph",
+      "playerNickname": "PH",
+      "type": "free",
+      "amount": 1,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T21:00:08.914Z"
+    },
+    {
+      "id": "log-eamlgbsvy",
+      "playerId": "player-nathan",
+      "playerNickname": "Nathan",
+      "type": "free",
+      "amount": 1,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T21:00:02.535Z"
+    },
+    {
+      "id": "log-657si3rby",
+      "playerId": "player-ph",
+      "playerNickname": "PH",
+      "type": "purchased",
+      "amount": -10,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:59:53.702Z"
+    },
+    {
+      "id": "log-rs6yamoga",
+      "playerId": "player-nathan",
+      "playerNickname": "Nathan",
+      "type": "purchased",
+      "amount": -10,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:41:42.503Z"
+    },
+    {
+      "id": "log-y960j0cbm",
+      "playerId": "player-china",
+      "playerNickname": "China",
+      "type": "purchased",
+      "amount": -1,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:41:01.438Z"
+    },
+    {
+      "id": "log-3wxl8n7fn",
+      "playerId": "player-china",
+      "playerNickname": "China",
+      "type": "free",
+      "amount": 1,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:40:53.659Z"
+    },
+    {
+      "id": "log-vpk02cql9",
+      "playerId": "player-china",
+      "playerNickname": "China",
+      "type": "purchased",
+      "amount": -9,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:40:46.044Z"
+    },
+    {
+      "id": "log-tuca43n83",
+      "playerId": "player-chummy",
+      "playerNickname": "Chummy",
+      "type": "free",
+      "amount": -2,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:53.908Z"
+    },
+    {
+      "id": "log-ecnslk1sr",
+      "playerId": "player-chummy",
+      "playerNickname": "Chummy",
+      "type": "purchased",
+      "amount": -12,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:37.960Z"
+    },
+    {
+      "id": "log-ob2bbnrrr",
+      "playerId": "player-chummy",
+      "playerNickname": "Chummy",
+      "type": "free",
+      "amount": 1,
+      "adminUsername": "Admin",
+      "reason": "Adição manual via Admin",
+      "createdAt": "2026-07-21T20:38:19.079Z"
+    }
+  ],
+  "packOpenLogs": [],
+  "recycleLogs": []
+}
