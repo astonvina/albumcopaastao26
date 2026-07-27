@@ -191,6 +191,22 @@ export default function AdminPanel({
       fetchPrizes();
       fetchLogs();
     }
+
+    const handleDataUpdate = () => {
+      if (isAdminLoggedIn) {
+        fetchStatsAndData();
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('copa_astao_data_updated', handleDataUpdate);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('copa_astao_data_updated', handleDataUpdate);
+      }
+    };
   }, [isAdminLoggedIn]);
 
   const fetchStatsAndData = async () => {

@@ -259,8 +259,28 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase.from('players').select('*');
+
+      let userStickersMap: Record<string, Record<string, number>> = {};
+      try {
+        const { data: sData, error: sError } = await supabase.from('user_stickers').select('*');
+        if (!sError && sData) {
+          sData.forEach((row: any) => {
+            const uId = safeString(row.user_id || row.userId || row.player_id || row.playerId);
+            const stkId = safeString(row.sticker_id || row.stickerId);
+            const qty = Number(row.quantidade ?? row.quantity ?? 1);
+            if (uId && stkId) {
+              if (!userStickersMap[uId]) userStickersMap[uId] = {};
+              userStickersMap[uId][stkId] = (userStickersMap[uId][stkId] || 0) + (isNaN(qty) || qty <= 0 ? 1 : qty);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase user_stickers Fetch Warning]:', err);
+      }
+
       if (!error && data) {
         return data.map((row: any) => {
+          const id = safeString(row.id);
           const getNum = (val: any, fallback: number) => {
             if (val !== undefined && val !== null && val !== '') {
               const parsed = Number(val);
@@ -272,8 +292,12 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
           const purchasedPacks = getNum(row.purchased_packs ?? row.purchasedPacks ?? row.creditos, 0);
           const freePacks = getNum(row.free_packs ?? row.freePacks, 0);
 
+          const tableStickers = row.collected_stickers || row.collectedStickers || {};
+          const userStickers = userStickersMap[id] || {};
+          const finalCollected = Object.keys(userStickers).length > 0 ? userStickers : tableStickers;
+
           return {
-            id: safeString(row.id),
+            id,
             fullName: safeString(row.full_name || row.fullName || row.nome || 'Jogador'),
             nickname: safeString(row.nickname || row.nome || row.full_name || 'Jogador'),
             accessCode: safeString(row.access_code || row.accessCode || row.code || row.codigo || '').toUpperCase(),
@@ -283,7 +307,7 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
             status: (safeLower(row.status) === 'inactive' ? 'inactive' : 'active') as any,
             purchasedPacks,
             freePacks,
-            collectedStickers: row.collected_stickers || row.collectedStickers || {},
+            collectedStickers: finalCollected,
             completedAlbum: Boolean(row.completed_album || row.completedAlbum),
             completedAt: row.completed_at || row.completedAt || null,
             createdAt: row.created_at || row.createdAt || new Date().toISOString(),
@@ -399,13 +423,15 @@ export async function getPlayerCollectedStickers(playerId: string): Promise<Reco
       const { data, error } = await supabase
         .from('user_stickers')
         .select('*')
-        .eq('user_id', playerId);
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
 
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         data.forEach((row: any) => {
           const stkId = safeString(row.sticker_id || row.stickerId);
-          const qty = Number(row.quantity || row.quantidade || 1);
-          if (stkId) counts[stkId] = qty;
+          const qty = Number(row.quantidade ?? row.quantity ?? 1);
+          if (stkId) {
+            counts[stkId] = (counts[stkId] || 0) + (isNaN(qty) || qty <= 0 ? 1 : qty);
+          }
         });
         return counts;
       }
@@ -414,7 +440,7 @@ export async function getPlayerCollectedStickers(playerId: string): Promise<Reco
     }
   }
 
-  // Fallback to local storage or player object
+  // Fallback to player object
   const players = await getPlayersFromSupabase();
   const player = players.find(p => p.id === playerId);
   return player?.collectedStickers || {};
@@ -491,12 +517,13 @@ export async function savePlayerStickers(
 export async function buildUserProfile(player: Player): Promise<UserProfile> {
   const allStickers = await getStickersFromSupabase();
   const collectedCounts = await getPlayerCollectedStickers(player.id);
+  const finalCounts = { ...(player.collectedStickers || {}), ...collectedCounts };
 
   let uniqueStickers = 0;
   let repeatedStickers = 0;
   let legendsCount = 0;
 
-  Object.entries(collectedCounts).forEach(([stkId, count]) => {
+  Object.entries(finalCounts).forEach(([stkId, count]) => {
     if (count > 0) {
       uniqueStickers += 1;
       if (count > 1) {
@@ -523,13 +550,13 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
     purchasedPacks: player.purchasedPacks,
     freePacks: player.freePacks,
     totalPacksAvailable: player.purchasedPacks + player.freePacks,
-    totalStickers: Object.values(collectedCounts).reduce((a, b) => a + b, 0),
+    totalStickers: Object.values(finalCounts).reduce((a, b) => a + b, 0),
     uniqueStickers,
     repeatedStickers,
     legendsCount,
     collectionProgress,
     completedAlbum,
-    collectedCounts
+    collectedCounts: finalCounts
   };
 }
 
@@ -738,6 +765,9 @@ export async function openPackFromSupabase(playerId: string): Promise<{ stickers
   });
 
   const profile = await buildUserProfile(updatedPlayer);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
+  }
   return { stickers: drawnStickers, userProfile: profile };
 }
 
@@ -786,5 +816,8 @@ export async function claimRecyclePackFromSupabase(playerId: string): Promise<{ 
   await savePlayerStickers(playerId, currentCollected);
 
   const profile = await buildUserProfile(player);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
+  }
   return { stickers: drawnStickers, userProfile: profile };
 }

@@ -122,12 +122,25 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
   useEffect(() => {
     fetchRanking();
 
+    const handleDataUpdate = () => {
+      fetchRanking(false);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('copa_astao_data_updated', handleDataUpdate);
+    }
+
     // Auto refresh ranking every 10 seconds for real-time experience
     const interval = setInterval(() => {
       fetchRanking(false);
     }, 10000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('copa_astao_data_updated', handleDataUpdate);
+      }
+      clearInterval(interval);
+    };
   }, []);
 
   // Filter players by search term

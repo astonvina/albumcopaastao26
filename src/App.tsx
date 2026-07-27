@@ -316,9 +316,15 @@ export default function App() {
           userProfile={userProfile}
           onClaimRecyclePack={handleClaimRecyclePack}
           isRecycling={isRecycling}
-          onClose={() => {
+          onClose={async () => {
             setOpenedPackStickers(null);
             setPackError(null);
+            if (loggedPlayer) {
+              await loadUserProfile(loggedPlayer.id);
+            }
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
+            }
             setActiveTab('album'); // Direct user to look at their newly glued stickers!
           }}
         />
