@@ -50,42 +50,35 @@ export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
 
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('*')
-        .eq('id', 'default')
-        .maybeSingle();
+      const { data: siteData, error } = await supabase.from('site_settings').select('*');
+      if (!error && siteData && Array.isArray(siteData) && siteData.length > 0) {
+        const map: Record<string, any> = {};
+        for (const row of siteData) {
+          const k = row.chave || row.key;
+          let v = row.valor !== undefined ? row.valor : row.value;
+          if (k) {
+            if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
+              try { v = JSON.parse(v); } catch {}
+            }
+            map[k] = v;
+          }
+        }
 
-      if (!error && data) {
         return {
           ...defaultSettings,
-          countdownDate: data.countdown_date || data.countdownDate || defaultSettings.countdownDate,
-          activeChampionshipId: data.active_championship_id || data.activeChampionshipId || defaultSettings.activeChampionshipId,
-          logoUrl: data.logo_url || data.logoUrl || defaultSettings.logoUrl,
-          albumCoverUrl: data.album_background_url || data.albumCoverUrl || defaultSettings.albumCoverUrl,
-          rankingBackgroundUrl: data.ranking_background_url || data.rankingBackgroundUrl || defaultSettings.rankingBackgroundUrl,
-          globalBackgroundUrl: data.global_background_url || data.globalBackgroundUrl || defaultSettings.globalBackgroundUrl,
-          teams: (data.teams && Array.isArray(data.teams) && data.teams.length > 0) ? data.teams : DEFAULT_TEAMS_LIST,
-          countdownConfig: {
-            ...DEFAULT_COUNTDOWN_CONFIG,
-            ...(data.countdown_config || data.countdownConfig || {}),
-            colors: {
-              ...DEFAULT_COUNTDOWN_CONFIG.colors,
-              ...((data.countdown_config || data.countdownConfig)?.colors || {})
-            }
-          },
-          rewardsBannerConfig: {
-            ...DEFAULT_REWARDS_BANNER_CONFIG,
-            ...(data.rewards_banner_config || data.rewardsBannerConfig || {}),
-            colors: {
-              ...DEFAULT_REWARDS_BANNER_CONFIG.colors,
-              ...((data.rewards_banner_config || data.rewardsBannerConfig)?.colors || {})
-            }
-          }
+          countdownDate: map['countdown_date'] || map['countdownDate'] || defaultSettings.countdownDate,
+          activeChampionshipId: map['active_championship_id'] || map['activeChampionshipId'] || defaultSettings.activeChampionshipId,
+          logoUrl: map['logo_url'] || map['logoUrl'] || defaultSettings.logoUrl,
+          albumCoverUrl: map['album_background_url'] || map['albumCoverUrl'] || defaultSettings.albumCoverUrl,
+          rankingBackgroundUrl: map['ranking_background_url'] || map['rankingBackgroundUrl'] || defaultSettings.rankingBackgroundUrl,
+          globalBackgroundUrl: map['background_url'] || map['global_background_url'] || map['globalBackgroundUrl'] || defaultSettings.globalBackgroundUrl,
+          teams: (Array.isArray(map['teams']) && map['teams'].length > 0) ? map['teams'] : defaultSettings.teams,
+          countdownConfig: typeof map['countdown_config'] === 'object' ? map['countdown_config'] : (typeof map['countdownConfig'] === 'object' ? map['countdownConfig'] : defaultSettings.countdownConfig),
+          rewardsBannerConfig: typeof map['rewards_banner_config'] === 'object' ? map['rewards_banner_config'] : (typeof map['rewardsBannerConfig'] === 'object' ? map['rewardsBannerConfig'] : defaultSettings.rewardsBannerConfig)
         };
       }
     } catch (err) {
-      console.warn('[Supabase Settings Error]:', err);
+      console.warn('[Supabase Site Settings Fetch Error]:', err);
     }
   }
 
@@ -106,28 +99,38 @@ export async function updateSystemSettingsInSupabase(newSettings: Partial<System
 
   if (isSupabaseConfigured && supabase) {
     try {
-      const payload = {
-        id: 'default',
-        countdown_date: merged.countdownDate,
-        active_championship_id: merged.activeChampionshipId,
-        logo_url: merged.logoUrl,
-        album_background_url: merged.albumCoverUrl,
-        ranking_background_url: merged.rankingBackgroundUrl,
-        global_background_url: merged.globalBackgroundUrl,
-        teams: merged.teams,
-        countdown_config: merged.countdownConfig,
-        rewards_banner_config: merged.rewardsBannerConfig,
-        updated_at: new Date().toISOString()
-      };
+      const siteEntries = [
+        { chave: 'logo_url', valor: merged.logoUrl },
+        { chave: 'background_url', valor: merged.globalBackgroundUrl || merged.homeBackgroundUrl },
+        { chave: 'album_background_url', valor: merged.albumCoverUrl },
+        { chave: 'ranking_background_url', valor: merged.rankingBackgroundUrl },
+        { chave: 'countdown_date', valor: merged.countdownDate },
+        { chave: 'active_championship_id', valor: merged.activeChampionshipId },
+        { chave: 'teams', valor: typeof merged.teams === 'object' ? JSON.stringify(merged.teams) : merged.teams },
+        { chave: 'countdown_config', valor: typeof merged.countdownConfig === 'object' ? JSON.stringify(merged.countdownConfig) : merged.countdownConfig },
+        { chave: 'rewards_banner_config', valor: typeof merged.rewardsBannerConfig === 'object' ? JSON.stringify(merged.rewardsBannerConfig) : merged.rewardsBannerConfig }
+      ];
 
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert(payload, { onConflict: 'id' });
-
-      if (!error) {
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(merged));
-        return true;
+      for (const entry of siteEntries) {
+        if (entry.valor !== undefined && entry.valor !== null) {
+          try {
+            await supabase
+              .from('site_settings')
+              .upsert({
+                chave: entry.chave,
+                valor: String(entry.valor),
+                key: entry.chave,
+                value: String(entry.valor),
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'chave' });
+          } catch {
+            // Ignore if schema lacks specific columns
+          }
+        }
       }
+
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(merged));
+      return true;
     } catch (err) {
       console.warn('[Supabase Settings Update Error]:', err);
     }
@@ -144,19 +147,31 @@ export async function updateSystemSettingsInSupabase(newSettings: Partial<System
 export async function getStickersFromSupabase(): Promise<Sticker[]> {
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase.from('stickers').select('*').order('number', { ascending: true });
-      if (!error && data && data.length > 0) {
-        return data.map((row: any) => ({
+      let rawData: any[] | null = null;
+      const { data, error } = await supabase.from('stickers').select('*').order('numero', { ascending: true });
+      if (!error && data) {
+        rawData = data;
+      } else {
+        // Fallback without ordering in case column index issue
+        const fallback = await supabase.from('stickers').select('*');
+        if (fallback.data) rawData = fallback.data;
+      }
+
+      if (rawData && rawData.length > 0) {
+        const mapped = rawData.map((row: any) => ({
           id: safeString(row.id),
-          number: safeString(row.number || row.numero || '0'),
-          name: safeString(row.name || row.nome || 'Figurinha'),
-          team: (row.team || row.time || 'Time Vermelho') as any,
-          image: safeString(row.image || row.imagem || row.photo_url || '/copa26.png'),
+          number: safeString(row.numero || row.number || '0'),
+          name: safeString(row.nome || row.name || 'Figurinha'),
+          team: (row.time || row.team || 'Time Vermelho') as any,
+          image: safeString(row.imagem || row.image || row.photo_url || '/copa26.png'),
           color: safeString(row.color || '#EF4444'),
-          rarity: (safeLower(row.rarity || row.raridade).includes('legend') || safeLower(row.rarity || row.raridade).includes('lendaria') ? 'Legend' : 'Normal') as any,
-          description: safeString(row.description || row.descricao || ''),
+          rarity: (safeLower(row.raridade || row.rarity).includes('legend') || safeLower(row.raridade || row.rarity).includes('lendaria') ? 'Legend' : 'Normal') as any,
+          description: safeString(row.descricao || row.description || ''),
           championshipId: safeString(row.championship_id || row.championshipId || 'copa-astao-2026')
         }));
+
+        mapped.sort((a, b) => (parseInt(a.number, 10) || 0) - (parseInt(b.number, 10) || 0));
+        return mapped;
       }
     } catch (err) {
       console.warn('[Supabase Stickers Fetch Error]:', err);
@@ -510,20 +525,20 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
 export async function getPrizesFromSupabase(): Promise<Prize[]> {
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase.from('prizes').select('*');
+      const { data, error } = await supabase.from('rewards').select('*');
       if (!error && data && data.length > 0) {
         return data.map((row: any) => ({
           id: safeString(row.id),
-          name: safeString(row.name || row.nome || 'Prêmio Exclusivo'),
-          description: safeString(row.description || row.descricao || ''),
-          imageUrl: safeString(row.image_url || row.imageUrl || row.imagem || '/copa26.png'),
-          quantity: Number(row.quantity || row.quantidade || 1),
-          deliveryCriteria: safeString(row.delivery_criteria || row.deliveryCriteria || row.criterio || 'Top do Ranking'),
+          name: safeString(row.nome || row.name || 'Prêmio Exclusivo'),
+          description: safeString(row.descricao || row.description || ''),
+          imageUrl: safeString(row.imagem || row.image_url || row.imageUrl || '/copa26.png'),
+          quantity: Number(row.quantidade || row.quantity || 1),
+          deliveryCriteria: safeString(row.criterio || row.delivery_criteria || row.deliveryCriteria || 'Top do Ranking'),
           createdAt: row.created_at || new Date().toISOString()
         }));
       }
     } catch (err) {
-      console.warn('[Supabase Prizes Fetch Error]:', err);
+      console.warn('[Supabase Rewards Fetch Error]:', err);
     }
   }
 
@@ -552,14 +567,16 @@ export async function savePrizeToSupabase(prizeData: Partial<Prize>): Promise<Pr
     imageUrl: safeString(prizeData.imageUrl, '/copa26.png'),
     imagem: safeString(prizeData.imageUrl, '/copa26.png'),
     quantity: prizeData.quantity || 1,
-    delivery_criteria: safeString(prizeData.deliveryCriteria, 'Top Ranking')
+    quantidade: prizeData.quantity || 1,
+    delivery_criteria: safeString(prizeData.deliveryCriteria, 'Top Ranking'),
+    criterio: safeString(prizeData.deliveryCriteria, 'Top Ranking')
   };
 
   if (isSupabaseConfigured && supabase) {
     try {
-      await supabase.from('prizes').upsert(record, { onConflict: 'id' });
+      await supabase.from('rewards').upsert(record, { onConflict: 'id' });
     } catch (err) {
-      console.warn('[Supabase Prize Save Error]:', err);
+      console.warn('[Supabase Reward Save Error]:', err);
     }
   }
 
@@ -585,9 +602,9 @@ export async function savePrizeToSupabase(prizeData: Partial<Prize>): Promise<Pr
 export async function deletePrizeFromSupabase(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
     try {
-      await supabase.from('prizes').delete().eq('id', id);
+      await supabase.from('rewards').delete().eq('id', id);
     } catch (err) {
-      console.warn('[Supabase Prize Delete Error]:', err);
+      console.warn('[Supabase Reward Delete Error]:', err);
     }
   }
   const prizes = await getPrizesFromSupabase();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab } from '../types';
-import { ShieldAlert, Home, BookOpen, Trophy, User, LogIn, Bell } from 'lucide-react';
+import { ShieldAlert, Home, BookOpen, Trophy, User, LogIn, LogOut, Bell } from 'lucide-react';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 
 interface NavbarProps {
@@ -9,6 +9,7 @@ interface NavbarProps {
   isAdminLoggedIn: boolean;
   loggedPlayerNickname?: string | null;
   onLogout: () => void;
+  onPlayerLogout?: () => void;
   onOpenPlayerLogin: () => void;
   onOpenAdminLogin: () => void;
 }
@@ -19,6 +20,7 @@ export default function Navbar({
   isAdminLoggedIn,
   loggedPlayerNickname,
   onLogout,
+  onPlayerLogout,
   onOpenPlayerLogin,
   onOpenAdminLogin
 }: NavbarProps) {
@@ -92,17 +94,42 @@ export default function Navbar({
               Ranking
             </button>
 
-            <button
-              onClick={onOpenPlayerLogin}
-              className={`px-3.5 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
-                activeTab === 'login'
-                  ? 'bg-brand-blue/10 text-brand-blue-glow shadow-inner border border-brand-blue/20'
-                  : 'text-gray-300 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              {loggedPlayerNickname ? `Conta: ${loggedPlayerNickname}` : 'Login Jogador'}
-            </button>
+            {loggedPlayerNickname ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={onOpenPlayerLogin}
+                  className={`px-3 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
+                    activeTab === 'login'
+                      ? 'bg-brand-blue/10 text-brand-blue-glow shadow-inner border border-brand-blue/20'
+                      : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <User className="w-4 h-4 text-brand-blue-glow" />
+                  <span>{loggedPlayerNickname}</span>
+                </button>
+                {onPlayerLogout && (
+                  <button
+                    onClick={onPlayerLogout}
+                    title="Sair da Conta do Jogador"
+                    className="p-2 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={onOpenPlayerLogin}
+                className={`px-3.5 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
+                  activeTab === 'login'
+                    ? 'bg-brand-blue/10 text-brand-blue-glow shadow-inner border border-brand-blue/20'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Login Jogador
+              </button>
+            )}
 
             <button
               onClick={() => setActiveTab('admin')}

@@ -131,6 +131,19 @@ export default function App() {
     }
   };
 
+  // Handle Player Logout
+  const handlePlayerLogout = () => {
+    setLoggedPlayer(null);
+    setUserProfile(null);
+    setCollectedIds([]);
+    localStorage.removeItem('copa_astao_player_code');
+    localStorage.removeItem('copa_astao_player_pass');
+    localStorage.removeItem('copa_astao_collected_ids');
+    if (activeTab === 'album' || activeTab === 'login') {
+      setActiveTab('home');
+    }
+  };
+
   // Handle Player Login Success
   const handlePlayerLoginSuccess = (player: Player, profile: UserProfile) => {
     setLoggedPlayer(player);
@@ -139,6 +152,7 @@ export default function App() {
       id => profile.collectedCounts[id] > 0
     );
     setCollectedIds(uniqueIds);
+    localStorage.setItem('copa_astao_player_code', player.accessCode);
     setActiveTab('home');
   };
 
@@ -200,6 +214,7 @@ export default function App() {
         isAdminLoggedIn={isAdminLoggedIn}
         loggedPlayerNickname={loggedPlayer?.nickname || userProfile?.nickname}
         onLogout={handleAdminLogout}
+        onPlayerLogout={handlePlayerLogout}
         onOpenPlayerLogin={() => setActiveTab('login')}
         onOpenAdminLogin={() => setActiveTab('admin')}
       />
