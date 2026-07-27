@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
+export { supabase, isSupabaseConfigured };
 import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer } from '../types';
 import { DEFAULT_TEAMS_LIST, DEFAULT_COUNTDOWN_CONFIG, DEFAULT_REWARDS_BANNER_CONFIG } from '../context/SystemSettingsContext';
 
@@ -187,31 +188,28 @@ export async function getStickersFromSupabase(): Promise<Sticker[]> {
   return INITIAL_DEFAULT_STICKERS;
 }
 
-export async function saveStickerToSupabase(sticker: Partial<Sticker>): Promise<Sticker | null> {
-  const id = sticker.id || `stk-${Date.now()}`;
-  const rawNumStr = safeString(sticker.number, '1');
-  const numInt = parseInt(rawNumStr.replace(/\D/g, ''), 10) || 1;
-  const imgUrl = safeString(sticker.image) || '/copa26.png';
+export async function saveStickerToSupabase(sticker: Partial<Sticker> & { numero?: any; nome?: string; raridade?: string; time?: string; imagem?: string }): Promise<Sticker | null> {
+  const id = sticker.id || undefined;
+  const rawNumStr = safeString(sticker.number || sticker.numero, '1');
+  const numInt = parseInt(rawNumStr.replace(/\D/g, ''), 10) || (parseInt(safeString(sticker.numero), 10) || 1);
+  const imgUrl = safeString(sticker.image || sticker.imagem) || '/copa26.png';
+  const nameStr = safeString(sticker.name || sticker.nome, 'Figurinha');
+  const teamStr = safeString(sticker.team || sticker.time, 'Time Vermelho');
+  const rarityStr = safeString(sticker.rarity || sticker.raridade, 'Normal');
 
-  const record = {
-    id,
-    number: rawNumStr,
+  // STRICTLY CLEAN payload containing ONLY the accepted table columns
+  const cleanPayload = {
+    id: id || undefined,
     numero: numInt,
-    name: safeString(sticker.name, 'Figurinha'),
-    nome: safeString(sticker.name, 'Figurinha'),
-    team: safeString(sticker.team, 'Time Vermelho'),
-    time: safeString(sticker.team, 'Time Vermelho'),
-    image: imgUrl,
-    imagem: imgUrl,
-    rarity: safeString(sticker.rarity, 'Normal'),
-    raridade: safeString(sticker.rarity, 'Normal'),
-    description: safeString(sticker.description, ''),
-    descricao: safeString(sticker.description, '')
+    nome: nameStr,
+    raridade: rarityStr,
+    time: teamStr,
+    imagem: imgUrl
   };
 
   if (isSupabaseConfigured && supabase) {
     try {
-      const { error } = await supabase.from('stickers').upsert(record, { onConflict: 'id' });
+      const { error } = await supabase.from('stickers').upsert(cleanPayload, { onConflict: 'id' });
       if (error) console.warn('[Supabase Sticker Upsert Error]:', error.message);
     } catch (err) {
       console.warn('[Supabase Sticker Save Exception]:', err);
@@ -219,16 +217,17 @@ export async function saveStickerToSupabase(sticker: Partial<Sticker>): Promise<
   }
 
   const all = await getStickersFromSupabase();
-  const idx = all.findIndex(s => s.id === id);
+  const localId = id || `stk-${Date.now()}`;
+  const idx = all.findIndex(s => s.id === localId);
   const updatedSticker: Sticker = {
-    id,
-    number: record.number,
-    name: record.name,
-    team: record.team as any,
-    image: record.image,
+    id: localId,
+    number: String(numInt),
+    name: nameStr,
+    team: teamStr as any,
+    image: imgUrl,
     color: sticker.color || '#EF4444',
-    rarity: (record.rarity === 'Legend' ? 'Legend' : 'Normal') as any,
-    description: record.description
+    rarity: (rarityStr === 'Legend' ? 'Legend' : 'Normal') as any,
+    description: sticker.description || ''
   };
 
   if (idx >= 0) all[idx] = updatedSticker;
