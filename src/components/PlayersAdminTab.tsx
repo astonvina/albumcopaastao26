@@ -61,7 +61,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
     team: 'Time Branco',
     photoUrl: '',
     password: '',
-    initialPacks: 10
+    initialPacks: 0
   });
 
   const [editForm, setEditForm] = useState({
@@ -69,7 +69,9 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
     nickname: '',
     team: 'Time Branco',
     photoUrl: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive',
+    purchasedPacks: 0,
+    freePacks: 0
   });
 
   const [creditForm, setCreditForm] = useState({
@@ -105,14 +107,18 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
     e.preventDefault();
     setErrorMsg(null);
     try {
+      const initialPacksNum = addForm.initialPacks !== undefined && addForm.initialPacks !== null && !isNaN(addForm.initialPacks)
+        ? Number(addForm.initialPacks)
+        : 0;
+
       const newPlayer = await savePlayerToSupabase({
         fullName: addForm.fullName,
         nickname: addForm.nickname,
         team: addForm.team,
         photoUrl: addForm.photoUrl,
         password: addForm.password || '123456',
-        purchasedPacks: addForm.initialPacks || 10,
-        freePacks: 1,
+        purchasedPacks: initialPacksNum,
+        freePacks: 0,
         status: 'active'
       });
 
@@ -124,7 +130,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         team: 'Time Branco',
         photoUrl: '',
         password: '',
-        initialPacks: 10
+        initialPacks: 0
       });
       fetchPlayers();
       onRefreshData();
@@ -145,7 +151,9 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         nickname: editForm.nickname,
         team: editForm.team,
         photoUrl: editForm.photoUrl,
-        status: editForm.status
+        status: editForm.status,
+        purchasedPacks: Number(editForm.purchasedPacks),
+        freePacks: Number(editForm.freePacks)
       });
 
       setSuccessMsg(`Jogador ${updated.nickname} atualizado!`);
@@ -536,7 +544,9 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                                 nickname: p.nickname,
                                 team: p.team,
                                 photoUrl: p.photoUrl,
-                                status: p.status
+                                status: p.status,
+                                purchasedPacks: p.purchasedPacks ?? 0,
+                                freePacks: p.freePacks ?? 0
                               });
                             }}
                             title="Editar Jogador"
@@ -726,6 +736,30 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                     <option value="Time Azul">Time Azul</option>
                     <option value="Time Vermelho">Time Vermelho</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-400 font-semibold uppercase">Pacotes Comprados</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editForm.purchasedPacks}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, purchasedPacks: parseInt(e.target.value, 10) || 0 }))}
+                    className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-400 font-semibold uppercase">Pacotes Grátis</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editForm.freePacks}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, freePacks: parseInt(e.target.value, 10) || 0 }))}
+                    className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
+                  />
                 </div>
               </div>
 

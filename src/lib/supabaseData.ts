@@ -260,24 +260,37 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
     try {
       const { data, error } = await supabase.from('players').select('*');
       if (!error && data) {
-        return data.map((row: any) => ({
-          id: safeString(row.id),
-          fullName: safeString(row.full_name || row.fullName || row.nome || 'Jogador'),
-          nickname: safeString(row.nickname || row.nome || row.full_name || 'Jogador'),
-          accessCode: safeString(row.access_code || row.accessCode || row.code || row.codigo || '').toUpperCase(),
-          hasPassword: Boolean(row.password || row.password_hash || row.passwordHash),
-          team: safeString(row.team || row.time || 'Time Branco'),
-          photoUrl: safeString(row.photo_url || row.photoUrl || row.avatar_url || row.avatar || '/default-avatar.png'),
-          status: (safeLower(row.status) === 'inactive' ? 'inactive' : 'active') as any,
-          purchasedPacks: Number(row.purchased_packs || row.purchasedPacks || row.creditos || 10),
-          freePacks: Number(row.free_packs || row.freePacks || 1),
-          collectedStickers: row.collected_stickers || row.collectedStickers || {},
-          completedAlbum: Boolean(row.completed_album || row.completedAlbum),
-          completedAt: row.completed_at || row.completedAt || null,
-          createdAt: row.created_at || row.createdAt || new Date().toISOString(),
-          lastAccessAt: row.last_access_at || row.lastAccessAt || null,
-          championshipId: safeString(row.championship_id || row.championshipId || 'copa-astao-2026')
-        }));
+        return data.map((row: any) => {
+          const getNum = (val: any, fallback: number) => {
+            if (val !== undefined && val !== null && val !== '') {
+              const parsed = Number(val);
+              if (!isNaN(parsed)) return parsed;
+            }
+            return fallback;
+          };
+
+          const purchasedPacks = getNum(row.purchased_packs ?? row.purchasedPacks ?? row.creditos, 0);
+          const freePacks = getNum(row.free_packs ?? row.freePacks, 0);
+
+          return {
+            id: safeString(row.id),
+            fullName: safeString(row.full_name || row.fullName || row.nome || 'Jogador'),
+            nickname: safeString(row.nickname || row.nome || row.full_name || 'Jogador'),
+            accessCode: safeString(row.access_code || row.accessCode || row.code || row.codigo || '').toUpperCase(),
+            hasPassword: Boolean(row.password || row.password_hash || row.passwordHash),
+            team: safeString(row.team || row.time || 'Time Branco'),
+            photoUrl: safeString(row.photo_url || row.photoUrl || row.avatar_url || row.avatar || '/default-avatar.png'),
+            status: (safeLower(row.status) === 'inactive' ? 'inactive' : 'active') as any,
+            purchasedPacks,
+            freePacks,
+            collectedStickers: row.collected_stickers || row.collectedStickers || {},
+            completedAlbum: Boolean(row.completed_album || row.completedAlbum),
+            completedAt: row.completed_at || row.completedAt || null,
+            createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+            lastAccessAt: row.last_access_at || row.lastAccessAt || null,
+            championshipId: safeString(row.championship_id || row.championshipId || 'copa-astao-2026')
+          };
+        });
       }
     } catch (err) {
       console.warn('[Supabase Players Fetch Error]:', err);
@@ -297,6 +310,9 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
   const id = playerData.id || `plr-${Date.now()}`;
   const code = safeString(playerData.accessCode || playerData.nickname || 'JOG001').toUpperCase().replace(/\s+/g, '');
 
+  const purchasedPacks = playerData.purchasedPacks !== undefined && playerData.purchasedPacks !== null ? Number(playerData.purchasedPacks) : 0;
+  const freePacks = playerData.freePacks !== undefined && playerData.freePacks !== null ? Number(playerData.freePacks) : 0;
+
   const record: any = {
     id,
     code,
@@ -310,9 +326,9 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
     time: safeString(playerData.team, 'Time Branco'),
     photo_url: safeString(playerData.photoUrl, '/default-avatar.png'),
     avatar: safeString(playerData.photoUrl, '/default-avatar.png'),
-    purchased_packs: playerData.purchasedPacks ?? 10,
-    creditos: playerData.purchasedPacks ?? 10,
-    free_packs: playerData.freePacks ?? 1,
+    purchased_packs: purchasedPacks,
+    creditos: purchasedPacks,
+    free_packs: freePacks,
     admin: false,
     status: playerData.status || 'active',
     updated_at: new Date().toISOString()
