@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 export { supabase, isSupabaseConfigured };
+import { dbInstance } from '../db/db';
 import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer } from '../types';
 import { DEFAULT_TEAMS_LIST, DEFAULT_COUNTDOWN_CONFIG, DEFAULT_REWARDS_BANNER_CONFIG } from '../context/SystemSettingsContext';
 
@@ -823,4 +824,54 @@ export async function claimRecyclePackFromSupabase(playerId: string): Promise<{ 
     window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
   }
   return { stickers: drawnStickers, userProfile: profile };
+}
+
+export async function resetAllPlayersAlbumsInSupabase(): Promise<boolean> {
+  if (isSupabaseConfigured && supabase) {
+    let rpcSuccess = false;
+    try {
+      const { error: rpcError } = await supabase.rpc('reset_all_players_albums');
+      if (!rpcError) {
+        rpcSuccess = true;
+      } else {
+        console.warn('[reset_all_players_albums] RPC error, executing fallback:', rpcError);
+      }
+    } catch (err) {
+      console.warn('[reset_all_players_albums] Exception calling RPC, executing fallback:', err);
+    }
+
+    if (!rpcSuccess) {
+      // Fallback: DELETE all user_stickers and UPDATE players
+      try {
+        await supabase.from('user_stickers').delete().neq('id', '0');
+      } catch (err) {
+        console.error('Error deleting user_stickers:', err);
+      }
+
+      try {
+        await supabase.from('players').update({
+          completed_stickers: 0,
+          repeat_stickers: 0,
+          purchased_packs: 0,
+          free_packs: 0
+        }).neq('id', '0');
+      } catch (err) {
+        console.error('Error updating players in reset fallback:', err);
+      }
+    }
+  }
+
+  try {
+    dbInstance.resetSystem();
+  } catch (err) {
+    console.error('Error calling dbInstance.resetSystem:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('copa_astao_collected_ids');
+    localStorage.removeItem('copa_astao_user_stickers_v2');
+    window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
+  }
+
+  return true;
 }

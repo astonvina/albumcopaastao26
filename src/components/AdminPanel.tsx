@@ -62,7 +62,8 @@ import {
   getPrizesFromSupabase, 
   savePrizeToSupabase, 
   deletePrizeFromSupabase, 
-  getRankingFromSupabase 
+  getRankingFromSupabase,
+  resetAllPlayersAlbumsInSupabase
 } from '../lib/supabaseData';
 
 interface AdminPanelProps {
@@ -570,8 +571,7 @@ export default function AdminPanel({
     setIsResetting(true);
     setResetError(null);
     try {
-      localStorage.removeItem('copa_astao_collected_ids');
-      localStorage.removeItem('copa_astao_user_stickers_v2');
+      await resetAllPlayersAlbumsInSupabase();
       onRefreshData();
       fetchStatsAndData();
       setResetSuccess(true);

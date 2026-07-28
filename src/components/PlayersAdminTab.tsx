@@ -20,7 +20,8 @@ import {
   Sparkles,
   X,
   Copy,
-  Check
+  Check,
+  RotateCcw
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Player, UserProfile, Sticker } from '../types';
@@ -29,7 +30,8 @@ import {
   getPlayersFromSupabase, 
   savePlayerToSupabase, 
   deletePlayerFromSupabase, 
-  buildUserProfile 
+  buildUserProfile,
+  resetAllPlayersAlbumsInSupabase
 } from '../lib/supabaseData';
 
 
@@ -84,6 +86,41 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [isResettingAll, setIsResettingAll] = useState(false);
+
+  // Reset All Players Albums Function
+  const handleResetAllAlbums = async () => {
+    if (!window.confirm("Tem certeza que deseja resetar o álbum de TODOS os jogadores para zero? Esta ação apagará todas as figurinhas coladas e zerará os saldos de pacotes.")) {
+      return;
+    }
+
+    setIsResettingAll(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      await resetAllPlayersAlbumsInSupabase();
+
+      // Update local React state for all players immediately
+      setPlayers(prev => prev.map(p => ({
+        ...p,
+        collectedStickers: {},
+        completedAlbum: false,
+        completedAt: null,
+        purchasedPacks: 0,
+        freePacks: 0
+      })));
+
+      onRefreshData();
+      setSuccessMsg("Todos os álbuns foram resetados com sucesso!");
+      alert("Todos os álbuns foram resetados com sucesso!");
+    } catch (err: any) {
+      console.error('Erro ao resetar álbuns:', err);
+      setErrorMsg('Erro ao resetar os álbuns: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setIsResettingAll(false);
+    }
+  };
 
   // Fetch Players List
   const fetchPlayers = async () => {
@@ -353,7 +390,16 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+          <button
+            onClick={handleResetAllAlbums}
+            disabled={isResettingAll}
+            className="px-3.5 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-400 rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all disabled:opacity-50"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            {isResettingAll ? 'Resetando...' : 'Resetar Todos os Álbuns'}
+          </button>
+
           <button
             onClick={handleExportCSV}
             className="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all"
