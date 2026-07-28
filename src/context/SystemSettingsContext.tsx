@@ -71,6 +71,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   initialFreePacks: 1,
   logoUrl: '/escudo3atual2.png',
   albumCoverUrl: '/copa26.png',
+  packCoverUrl: '',
   homeBackgroundUrl: '',
   rankingBackgroundUrl: '',
   globalBackgroundUrl: '',

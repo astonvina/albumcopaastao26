@@ -70,7 +70,7 @@ interface AdminPanelProps {
   stickers: Sticker[];
   onRefreshData: () => void;
   onLogout: () => void;
-  onLogin: (pass: string) => Promise<boolean>;
+  onLogin: (username: string, pass: string) => Promise<boolean>;
 }
 
 type AdminSubTab = 
@@ -105,7 +105,9 @@ export default function AdminPanel({
 
   // Panel states
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('dashboard');
-  const [appearanceTab, setAppearanceTab] = useState<'logo' | 'teams' | 'backgrounds' | 'album'>('logo');
+  const [appearanceTab, setAppearanceTab] = useState<'logo' | 'teams' | 'backgrounds' | 'album' | 'pack'>('logo');
+  const [packCoverLoading, setPackCoverLoading] = useState(false);
+  const [packCoverSuccessMsg, setPackCoverSuccessMsg] = useState<string | null>(null);
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
@@ -280,14 +282,23 @@ export default function AdminPanel({
   const handleAdminLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
+
+    const cleanUser = (username || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    if (cleanUser !== 'admin' || cleanPass !== 'faz1leva3') {
+      setLoginError('Usuário ou senha incorretos!');
+      return;
+    }
+
     setIsLoggingIn(true);
     try {
-      const ok = await onLogin(password);
+      const ok = await onLogin(cleanUser, cleanPass);
       if (!ok) {
-        setLoginError('Senha de administrador incorreta.');
+        setLoginError('Usuário ou senha incorretos!');
       }
     } catch (err: any) {
-      setLoginError('Erro ao autenticar: ' + err.message);
+      setLoginError('Usuário ou senha incorretos!');
     } finally {
       setIsLoggingIn(false);
     }
@@ -1376,6 +1387,12 @@ export default function AdminPanel({
               >
                 Capa Álbum
               </button>
+              <button
+                onClick={() => setAppearanceTab('pack')}
+                className={`px-3 py-1.5 text-xs font-bold uppercase rounded-lg border ${appearanceTab === 'pack' ? 'bg-brand-gold text-black border-amber-500' : 'bg-white/5 text-gray-300 border-white/10'}`}
+              >
+                Capa Pacote
+              </button>
             </div>
           </div>
 
@@ -1446,6 +1463,37 @@ export default function AdminPanel({
               />
             </div>
           )}
+
+          {appearanceTab === 'pack' && (
+            <div className="bg-brand-surface border border-white/10 p-6 rounded-2xl max-w-lg mx-auto space-y-4">
+              <h3 className="font-display text-lg uppercase text-white">Capa do Pacote de Figurinhas</h3>
+              <ImageUploader
+                label="Capa do Pacote de Figurinhas"
+                bucket="stickers"
+                currentUrl={settings.packCoverUrl || '/copa26.png'}
+                onUploadSuccess={async (url) => {
+                  setPackCoverLoading(true);
+                  setPackCoverSuccessMsg(null);
+                  await updateSettings({ packCoverUrl: url });
+                  setPackCoverLoading(false);
+                  setPackCoverSuccessMsg("Capa do pacote atualizada com sucesso!");
+                }}
+                onDeleteSuccess={async () => {
+                  setPackCoverLoading(true);
+                  setPackCoverSuccessMsg(null);
+                  await updateSettings({ packCoverUrl: '' });
+                  setPackCoverLoading(false);
+                  setPackCoverSuccessMsg("Capa do pacote atualizada com sucesso!");
+                }}
+              />
+              {packCoverLoading && (
+                <p className="text-xs text-brand-blue-glow text-center animate-pulse">Salvando capa do pacote...</p>
+              )}
+              {packCoverSuccessMsg && (
+                <p className="text-xs text-emerald-400 font-medium text-center">{packCoverSuccessMsg}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1506,6 +1554,35 @@ export default function AdminPanel({
                   onChange={(e) => setInitialFreePacks(parseInt(e.target.value, 10) || 0)}
                   className="w-full px-4 py-3 bg-brand-dark border border-white/10 rounded-xl text-white text-sm"
                 />
+              </div>
+
+              {/* Capa do Pacote de Figurinhas */}
+              <div className="space-y-2 pt-4 border-t border-white/10">
+                <ImageUploader
+                  label="Capa do Pacote de Figurinhas"
+                  bucket="stickers"
+                  currentUrl={settings.packCoverUrl || '/copa26.png'}
+                  onUploadSuccess={async (url) => {
+                    setPackCoverLoading(true);
+                    setPackCoverSuccessMsg(null);
+                    await updateSettings({ packCoverUrl: url });
+                    setPackCoverLoading(false);
+                    setPackCoverSuccessMsg("Capa do pacote atualizada com sucesso!");
+                  }}
+                  onDeleteSuccess={async () => {
+                    setPackCoverLoading(true);
+                    setPackCoverSuccessMsg(null);
+                    await updateSettings({ packCoverUrl: '' });
+                    setPackCoverLoading(false);
+                    setPackCoverSuccessMsg("Capa do pacote atualizada com sucesso!");
+                  }}
+                />
+                {packCoverLoading && (
+                  <p className="text-xs text-brand-blue-glow text-center animate-pulse">Salvando capa do pacote...</p>
+                )}
+                {packCoverSuccessMsg && (
+                  <p className="text-xs text-emerald-400 font-medium text-center">{packCoverSuccessMsg}</p>
+                )}
               </div>
 
               {probSaveStatus === 'success' && <p className="text-xs text-green-400 text-center">Salvo com sucesso!</p>}

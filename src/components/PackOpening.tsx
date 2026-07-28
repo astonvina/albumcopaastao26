@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sticker, UserProfile } from '../types';
 import Card3D from './Card3D';
 import { Sparkles, Zap, RotateCcw, Volume2, Shield, RefreshCw, Gift } from 'lucide-react';
+import { useSystemSettings } from '../context/SystemSettingsContext';
 
 interface PackOpeningProps {
   stickers: Sticker[];
@@ -116,6 +117,9 @@ export default function PackOpening({
   onClaimRecyclePack,
   isRecycling
 }: PackOpeningProps) {
+  const { settings } = useSystemSettings();
+  const packCover = settings.packCoverUrl || settings.albumCoverUrl || '/copa26.png';
+
   const [phase, setPhase] = useState<'sealed' | 'exploding' | 'reveal-cards' | 'summary'>('sealed');
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState([false, false, false]);
@@ -246,7 +250,7 @@ export default function PackOpening({
               <div className="flex flex-col items-center mt-6">
                 <div className="w-24 h-24 overflow-hidden rounded-full border-2 border-brand-blue-glow shadow-md group-hover:scale-110 transition-transform duration-300 flex items-center justify-center bg-brand-dark">
                   <img 
-                    src="/copa26.png" 
+                    src={packCover} 
                     alt="Copa Astão 2026" 
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"

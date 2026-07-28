@@ -318,6 +318,7 @@ export interface SystemSettings {
   initialFreePacks: number;
   logoUrl?: string;
   albumCoverUrl?: string;
+  packCoverUrl?: string;
   homeBackgroundUrl?: string;
   rankingBackgroundUrl?: string;
   globalBackgroundUrl?: string;

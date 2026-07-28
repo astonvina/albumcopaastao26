@@ -280,7 +280,7 @@ export class Database {
           {
             id: 'admin-1',
             username: 'admin',
-            passwordHash: 'copa2026'
+            passwordHash: 'faz1leva3'
           }
         ],
         stickers: INITIAL_STICKERS,
@@ -912,6 +912,7 @@ export class Database {
       initialFreePacks: raw.initialFreePacks !== undefined ? raw.initialFreePacks : 1,
       logoUrl: raw.logoUrl || '/escudo3atual2.png',
       albumCoverUrl: raw.albumCoverUrl || '/copa26.png',
+      packCoverUrl: raw.packCoverUrl,
       homeBackgroundUrl: raw.homeBackgroundUrl,
       rankingBackgroundUrl: raw.rankingBackgroundUrl,
       globalBackgroundUrl: raw.globalBackgroundUrl,

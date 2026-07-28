@@ -107,9 +107,11 @@ export default function App() {
   }, []);
 
   // Handle Admin Login submission
-  const handleAdminLogin = async (password: string): Promise<boolean> => {
+  const handleAdminLogin = async (username: string, password: string): Promise<boolean> => {
     try {
-      if (password.trim() === 'copa2026' || password.trim() === 'admin123') {
+      const cleanUser = (username || '').trim().toLowerCase();
+      const cleanPass = (password || '').trim();
+      if (cleanUser === 'admin' && cleanPass === 'faz1leva3') {
         setIsAdminLoggedIn(true);
         sessionStorage.setItem('copa_astao_admin_logged', 'true');
         setActiveTab('admin');
@@ -291,7 +293,7 @@ export default function App() {
                 stickers={stickers}
                 onRefreshData={loadStickers}
                 isAdminLoggedIn={isAdminLoggedIn}
-                onLogin={(pass) => handleAdminLogin(pass)}
+                onLogin={(user, pass) => handleAdminLogin(user, pass)}
                 onLogout={handleAdminLogout}
               />
             )}
