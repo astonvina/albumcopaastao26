@@ -71,9 +71,37 @@ export default function Card3D({
     xl: { container: 'w-6 h-6.5 text-sm', font: 'text-base' }
   };
 
-  const isLegend = sticker.rarity === 'Legend';
+  const isLegend = sticker.rarity === 'Legend' || sticker.isLegend || sticker.team === 'Legends';
 
-  const cardColor = sticker.color || (isLegend ? '#E5B80B' : '#FFFFFF');
+  // Dynamic border color calculation based on rarity and team primary color
+  const getBorderColor = (): string => {
+    if (isLegend) {
+      return '#FFD700'; // Strict gold for Legends
+    }
+
+    // Direct team_color or custom color on sticker object
+    if (sticker.team_color) {
+      return sticker.team_color;
+    }
+
+    // Color by team name
+    switch (sticker.team) {
+      case 'Time Branco':
+        return '#FFFFFF';
+      case 'Time Preto':
+        return sticker.color && sticker.color !== '#EF4444' ? sticker.color : '#A3A3A3';
+      case 'Time Azul':
+        return sticker.color && sticker.color !== '#EF4444' ? sticker.color : '#0099D6';
+      case 'Time Vermelho':
+        return '#EF4444';
+      case 'Legends':
+        return '#FFD700';
+      default:
+        return sticker.color || '#0099D6';
+    }
+  };
+
+  const cardColor = getBorderColor();
 
   return (
     <div 
@@ -91,7 +119,7 @@ export default function Card3D({
           maxWidth: `${baseWidth}px`,
           aspectRatio: '608/766',
           boxShadow: isHovered 
-            ? `0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 15px ${cardColor}44` 
+            ? `0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 18px ${cardColor}66` 
             : '0 8px 20px -6px rgba(0, 0, 0, 0.6)',
         }}
         onMouseMove={handleMouseMove}
@@ -106,7 +134,7 @@ export default function Card3D({
 
         {/* Legend glow animation border */}
         {isLegend && (
-          <div className="absolute inset-0 border border-amber-300/30 rounded-xl animate-pulse pointer-events-none z-10" />
+          <div className="absolute inset-0 border-2 border-amber-300/40 rounded-xl animate-pulse pointer-events-none z-10" />
         )}
 
         {/* Full-bleed sticker image filling the box */}
@@ -130,11 +158,27 @@ export default function Card3D({
           </div>
         )}
 
-        {/* Alignment line on the exact contour of the card/image */}
+        {/* Alignment line on the exact contour of the card/image with dynamic border color */}
         <div 
           className="absolute inset-0 pointer-events-none border-[3px] rounded-xl z-20 transition-all duration-300" 
-          style={{ borderColor: cardColor }}
+          style={{ 
+            borderColor: cardColor,
+            boxShadow: isLegend ? '0 0 12px rgba(255, 215, 0, 0.6), inset 0 0 8px rgba(255, 215, 0, 0.4)' : undefined 
+          }}
         />
+
+        {/* Metallic Gold effect border gradient for Legends */}
+        {isLegend && (
+          <div 
+            className="absolute inset-0 rounded-xl pointer-events-none z-20 p-[2.5px] opacity-90"
+            style={{
+              background: 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%)',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              maskComposite: 'exclude',
+            }}
+          />
+        )}
 
         {/* Golden Sparkles for Legends */}
         {isLegend && (

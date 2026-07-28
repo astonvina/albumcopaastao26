@@ -58,6 +58,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
 
   // Form States
   const [addForm, setAddForm] = useState({
+    profileType: 'player' as 'player' | 'fan',
     fullName: '',
     nickname: '',
     team: 'Time Branco',
@@ -67,6 +68,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
   });
 
   const [editForm, setEditForm] = useState({
+    profileType: 'player' as 'player' | 'fan',
     fullName: '',
     nickname: '',
     team: 'Time Branco',
@@ -148,10 +150,13 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         ? Number(addForm.initialPacks)
         : 0;
 
+      const isFan = addForm.profileType === 'fan';
+
       const newPlayer = await savePlayerToSupabase({
         fullName: addForm.fullName,
         nickname: addForm.nickname,
-        team: addForm.team,
+        team: isFan ? 'Torcedor' : addForm.team,
+        isFan: isFan,
         photoUrl: addForm.photoUrl,
         password: addForm.password || '123456',
         purchasedPacks: initialPacksNum,
@@ -159,9 +164,10 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         status: 'active'
       });
 
-      setSuccessMsg(`Jogador ${newPlayer.nickname} criado com sucesso! Code: ${newPlayer.accessCode}`);
+      setSuccessMsg(`${isFan ? 'Torcedor' : 'Jogador'} ${newPlayer.nickname} criado com sucesso! Code: ${newPlayer.accessCode}`);
       setShowAddModal(false);
       setAddForm({
+        profileType: 'player',
         fullName: '',
         nickname: '',
         team: 'Time Branco',
@@ -172,7 +178,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
       fetchPlayers();
       onRefreshData();
     } catch (err: any) {
-      setErrorMsg('Erro ao cadastrar jogador: ' + err.message);
+      setErrorMsg('Erro ao cadastrar: ' + err.message);
     }
   };
 
@@ -182,18 +188,21 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
     if (!editingPlayer) return;
     setErrorMsg(null);
     try {
+      const isFan = editForm.profileType === 'fan';
+
       const updated = await savePlayerToSupabase({
         ...editingPlayer,
         fullName: editForm.fullName,
         nickname: editForm.nickname,
-        team: editForm.team,
+        team: isFan ? 'Torcedor' : editForm.team,
+        isFan: isFan,
         photoUrl: editForm.photoUrl,
         status: editForm.status,
         purchasedPacks: Number(editForm.purchasedPacks),
         freePacks: Number(editForm.freePacks)
       });
 
-      setSuccessMsg(`Jogador ${updated.nickname} atualizado!`);
+      setSuccessMsg(`Perfil de ${updated.nickname} atualizado!`);
       setEditingPlayer(null);
       fetchPlayers();
       onRefreshData();
@@ -297,7 +306,11 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
       const matchesSearch = p.fullName.toLowerCase().includes(search.toLowerCase()) || 
                             p.nickname.toLowerCase().includes(search.toLowerCase()) ||
                             p.accessCode.toLowerCase().includes(search.toLowerCase());
-      const matchesTeam = teamFilter === 'all' || p.team === teamFilter;
+      const matchesTeam = teamFilter === 'all' 
+        ? true 
+        : teamFilter === 'Torcedor' 
+          ? (p.team === 'Torcedor' || Boolean(p.isFan)) 
+          : p.team === teamFilter;
       const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
       return matchesSearch && matchesTeam && matchesStatus;
     });
@@ -323,7 +336,11 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
     const matchesSearch = p.fullName.toLowerCase().includes(search.toLowerCase()) || 
                           p.nickname.toLowerCase().includes(search.toLowerCase()) ||
                           p.accessCode.toLowerCase().includes(search.toLowerCase());
-    const matchesTeam = teamFilter === 'all' || p.team === teamFilter;
+    const matchesTeam = teamFilter === 'all' 
+      ? true 
+      : teamFilter === 'Torcedor' 
+        ? (p.team === 'Torcedor' || Boolean(p.isFan)) 
+        : p.team === teamFilter;
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchesSearch && matchesTeam && matchesStatus;
   });
@@ -371,11 +388,12 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
             onChange={(e) => setTeamFilter(e.target.value)}
             className="px-3 py-2 bg-brand-dark border border-white/10 rounded-lg text-xs text-white outline-none focus:border-brand-gold transition-all"
           >
-            <option value="all">Todos os Times</option>
+            <option value="all">Todos os Times e Torcedores</option>
             <option value="Time Branco">Time Branco</option>
             <option value="Time Preto">Time Preto</option>
             <option value="Time Azul">Time Azul</option>
             <option value="Time Vermelho">Time Vermelho</option>
+            <option value="Torcedor">🎗️ Torcedores</option>
           </select>
 
           <select
@@ -412,6 +430,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
             onClick={() => {
               setShowAddModal(true);
               setAddForm({
+                profileType: 'player',
                 fullName: '',
                 nickname: '',
                 team: 'Time Branco',
@@ -423,7 +442,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
             className="px-4 py-2 bg-brand-gold hover:bg-yellow-500 text-black rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md border-b-2 border-amber-700 transition-all"
           >
             <Plus className="w-4 h-4" />
-            Cadastrar Jogador
+            Cadastrar Pessoa / Torcedor
           </button>
         </div>
 
@@ -432,16 +451,16 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
       {/* Players List Table */}
       <div className="bg-brand-surface border border-white/5 rounded-2xl overflow-hidden shadow-lg">
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-xs">Carregando lista de jogadores...</div>
+          <div className="py-16 text-center text-gray-400 text-xs">Carregando lista de cadastrados...</div>
         ) : filteredPlayers.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-xs italic">Nenhum jogador encontrado com os filtros aplicados.</div>
+          <div className="py-16 text-center text-gray-400 text-xs italic">Nenhum jogador ou torcedor encontrado com os filtros aplicados.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-brand-dark/80 uppercase text-[10px] font-mono tracking-wider text-gray-400 border-b border-white/5">
                 <tr>
-                  <th className="p-4">Jogador</th>
-                  <th className="p-4">Time</th>
+                  <th className="p-4">Usuário</th>
+                  <th className="p-4">Time / Categoria</th>
                   <th className="p-4">Código Acesso</th>
                   <th className="p-4">Pacotes Disponíveis</th>
                   <th className="p-4">Progresso Álbum</th>
@@ -454,6 +473,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                   const uniqueCount = Object.keys(p.collectedStickers || {}).filter(k => (p.collectedStickers[k] || 0) > 0).length;
                   const totalStickersCount = stickers.length || 30;
                   const progressPct = Math.round((uniqueCount / totalStickersCount) * 100);
+                  const isFanUser = p.team === 'Torcedor' || Boolean(p.isFan);
 
                   return (
                     <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
@@ -467,7 +487,12 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <div className="font-bold text-white text-sm">{p.nickname}</div>
+                            <div className="font-bold text-white text-sm flex items-center gap-1.5">
+                              {p.nickname}
+                              {isFanUser && (
+                                <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.2 rounded font-mono font-normal">Torcedor</span>
+                              )}
+                            </div>
                             <div className="text-[10px] text-gray-400">{p.fullName}</div>
                           </div>
                         </div>
@@ -475,14 +500,21 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
 
                       {/* Team */}
                       <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border ${
-                          p.team === 'Time Branco' ? 'bg-white/10 border-white/20 text-white' :
-                          p.team === 'Time Preto' ? 'bg-neutral-800 border-neutral-600 text-gray-300' :
-                          p.team === 'Time Azul' ? 'bg-sky-500/10 border-sky-500/30 text-sky-400' :
-                          'bg-red-500/10 border-red-500/30 text-red-400'
-                        }`}>
-                          {p.team}
-                        </span>
+                        {isFanUser ? (
+                          <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border bg-amber-500/10 border-amber-500/30 text-amber-400 inline-flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            Torcedor
+                          </span>
+                        ) : (
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border ${
+                            p.team === 'Time Branco' ? 'bg-white/10 border-white/20 text-white' :
+                            p.team === 'Time Preto' ? 'bg-neutral-800 border-neutral-600 text-gray-300' :
+                            p.team === 'Time Azul' ? 'bg-sky-500/10 border-sky-500/30 text-sky-400' :
+                            'bg-red-500/10 border-red-500/30 text-red-400'
+                          }`}>
+                            {p.team}
+                          </span>
+                        )}
                       </td>
 
                       {/* Code */}
@@ -584,11 +616,13 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                           {/* Edit Player */}
                           <button
                             onClick={() => {
+                              const isFanPlayer = p.team === 'Torcedor' || Boolean(p.isFan);
                               setEditingPlayer(p);
                               setEditForm({
+                                profileType: isFanPlayer ? 'fan' : 'player',
                                 fullName: p.fullName,
                                 nickname: p.nickname,
-                                team: p.team,
+                                team: p.team === 'Torcedor' ? 'Time Branco' : p.team,
                                 photoUrl: p.photoUrl,
                                 status: p.status,
                                 purchasedPacks: p.purchasedPacks ?? 0,
@@ -620,7 +654,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         )}
       </div>
 
-      {/* MODAL 1: ADD PLAYER */}
+      {/* MODAL 1: ADD PLAYER / TORCEDOR */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-brand-surface border border-white/10 p-6 rounded-2xl w-full max-w-md space-y-5 relative text-left">
@@ -632,10 +666,39 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
             </button>
 
             <h3 className="font-display text-xl uppercase tracking-wider text-white">
-              Cadastrar Novo Jogador
+              Cadastrar Usuário / Torcedor
             </h3>
 
             <form onSubmit={handleAddPlayerSubmit} className="space-y-4">
+              {/* Profile Type Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-400 font-semibold uppercase">Tipo de Perfil *</label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-brand-dark border border-white/10 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setAddForm(prev => ({ ...prev, profileType: 'player' }))}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                      addForm.profileType === 'player'
+                        ? 'bg-brand-gold text-black shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    ⚽ Jogador de Time
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddForm(prev => ({ ...prev, profileType: 'fan', team: 'Torcedor' }))}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                      addForm.profileType === 'fan'
+                        ? 'bg-amber-500 text-black shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    🎗️ Torcedor / Outro
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs text-gray-400 font-semibold uppercase">Nome Completo *</label>
                 <input
@@ -662,17 +725,26 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-400 font-semibold uppercase">Time *</label>
-                  <select
-                    value={addForm.team}
-                    onChange={(e) => setAddForm(prev => ({ ...prev, team: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
-                  >
-                    <option value="Time Branco">Time Branco</option>
-                    <option value="Time Preto">Time Preto</option>
-                    <option value="Time Azul">Time Azul</option>
-                    <option value="Time Vermelho">Time Vermelho</option>
-                  </select>
+                  <label className="text-xs text-gray-400 font-semibold uppercase">
+                    {addForm.profileType === 'fan' ? 'Time (Opcional)' : 'Time *'}
+                  </label>
+                  {addForm.profileType === 'fan' ? (
+                    <div className="w-full px-3.5 py-2 bg-brand-dark/50 border border-amber-500/20 rounded-xl text-amber-400 text-[11px] font-medium flex items-center gap-1.5 h-[38px]">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                      Torcedor (Sem time)
+                    </div>
+                  ) : (
+                    <select
+                      value={addForm.team}
+                      onChange={(e) => setAddForm(prev => ({ ...prev, team: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
+                    >
+                      <option value="Time Branco">Time Branco</option>
+                      <option value="Time Preto">Time Preto</option>
+                      <option value="Time Azul">Time Azul</option>
+                      <option value="Time Vermelho">Time Vermelho</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -701,9 +773,9 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
 
               <div className="space-y-1">
                 <ImageUploader
-                  label="Foto do Jogador"
+                  label={addForm.profileType === 'fan' ? 'Foto do Torcedor' : 'Foto do Jogador'}
                   bucket="players"
-                  customName={addForm.nickname ? `player_${addForm.nickname}` : 'player'}
+                  customName={addForm.nickname ? `user_${addForm.nickname}` : 'user'}
                   currentUrl={addForm.photoUrl}
                   onUploadSuccess={(url) => setAddForm(prev => ({ ...prev, photoUrl: url }))}
                   onDeleteSuccess={() => setAddForm(prev => ({ ...prev, photoUrl: '' }))}
@@ -723,7 +795,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                   type="submit"
                   className="px-5 py-2 bg-brand-gold text-black rounded-lg text-xs font-bold uppercase shadow-md"
                 >
-                  Criar Jogador
+                  {addForm.profileType === 'fan' ? 'Criar Torcedor' : 'Criar Jogador'}
                 </button>
               </div>
             </form>
@@ -731,7 +803,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         </div>
       )}
 
-      {/* MODAL 2: EDIT PLAYER */}
+      {/* MODAL 2: EDIT PLAYER / TORCEDOR */}
       {editingPlayer && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-brand-surface border border-white/10 p-6 rounded-2xl w-full max-w-md space-y-5 relative text-left">
@@ -743,10 +815,39 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
             </button>
 
             <h3 className="font-display text-xl uppercase tracking-wider text-white">
-              Editar Jogador: {editingPlayer.nickname}
+              Editar Perfil: {editingPlayer.nickname}
             </h3>
 
             <form onSubmit={handleEditPlayerSubmit} className="space-y-4">
+              {/* Profile Type Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-400 font-semibold uppercase">Tipo de Perfil *</label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-brand-dark border border-white/10 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setEditForm(prev => ({ ...prev, profileType: 'player' }))}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                      editForm.profileType === 'player'
+                        ? 'bg-brand-gold text-black shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    ⚽ Jogador de Time
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditForm(prev => ({ ...prev, profileType: 'fan', team: 'Torcedor' }))}
+                    className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                      editForm.profileType === 'fan'
+                        ? 'bg-amber-500 text-black shadow-md'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    🎗️ Torcedor / Outro
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs text-gray-400 font-semibold uppercase">Nome Completo</label>
                 <input
@@ -771,17 +872,26 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-400 font-semibold uppercase">Time</label>
-                  <select
-                    value={editForm.team}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, team: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
-                  >
-                    <option value="Time Branco">Time Branco</option>
-                    <option value="Time Preto">Time Preto</option>
-                    <option value="Time Azul">Time Azul</option>
-                    <option value="Time Vermelho">Time Vermelho</option>
-                  </select>
+                  <label className="text-xs text-gray-400 font-semibold uppercase">
+                    {editForm.profileType === 'fan' ? 'Time (Opcional)' : 'Time'}
+                  </label>
+                  {editForm.profileType === 'fan' ? (
+                    <div className="w-full px-3.5 py-2 bg-brand-dark/50 border border-amber-500/20 rounded-xl text-amber-400 text-[11px] font-medium flex items-center gap-1.5 h-[38px]">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                      Torcedor (Sem time)
+                    </div>
+                  ) : (
+                    <select
+                      value={editForm.team}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, team: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-brand-dark border border-white/10 rounded-xl text-white text-xs outline-none focus:border-brand-gold"
+                    >
+                      <option value="Time Branco">Time Branco</option>
+                      <option value="Time Preto">Time Preto</option>
+                      <option value="Time Azul">Time Azul</option>
+                      <option value="Time Vermelho">Time Vermelho</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -823,7 +933,7 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
 
               <div className="space-y-1">
                 <ImageUploader
-                  label="Foto do Jogador"
+                  label={editForm.profileType === 'fan' ? 'Foto do Torcedor' : 'Foto do Jogador'}
                   bucket="players"
                   customName={editForm.nickname ? `player_${editForm.nickname}` : 'player'}
                   currentUrl={editForm.photoUrl}

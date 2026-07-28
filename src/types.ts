@@ -5,6 +5,8 @@ export interface Sticker {
   team: 'Time Branco' | 'Time Preto' | 'Time Azul' | 'Time Vermelho' | 'Legends';
   image: string;
   color: string;
+  team_color?: string;
+  isLegend?: boolean;
   rarity: 'Normal' | 'Legend';
   description: string;
   championshipId?: string;
@@ -19,6 +21,7 @@ export interface Player {
   passwordHash?: string | null;
   hasPassword: boolean;
   team: string;
+  isFan?: boolean;
   photoUrl: string;
   status: 'active' | 'inactive';
   purchasedPacks: number;
@@ -102,6 +105,7 @@ export interface UserProfile {
   nickname: string;
   accessCode: string;
   team: string;
+  isFan?: boolean;
   photoUrl: string;
   purchasedPacks: number;
   freePacks: number;
