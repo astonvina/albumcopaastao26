@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const safeProcessEnv = typeof process !== 'undefined' ? process.env : {};
+const metaEnv = (import.meta as any).env || {};
+
+const supabaseUrl = safeProcessEnv.SUPABASE_URL || safeProcessEnv.VITE_SUPABASE_URL || metaEnv.VITE_SUPABASE_URL || '';
+const supabaseServiceKey = safeProcessEnv.SUPABASE_SERVICE_ROLE_KEY || safeProcessEnv.SUPABASE_ANON_KEY || safeProcessEnv.VITE_SUPABASE_ANON_KEY || metaEnv.VITE_SUPABASE_ANON_KEY || '';
 
 export const isSupabaseServerConfigured = Boolean(supabaseUrl && supabaseServiceKey);
 
