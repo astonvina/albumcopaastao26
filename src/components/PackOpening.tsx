@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sticker, UserProfile } from '../types';
 import Card3D from './Card3D';
-import { Sparkles, Zap, RotateCcw, Volume2, Shield, RefreshCw, Gift } from 'lucide-react';
+import { Sparkles, Zap, RotateCcw, Volume2, Shield, RefreshCw, Gift, X } from 'lucide-react';
 import { useSystemSettings } from '../context/SystemSettingsContext';
 
 interface PackOpeningProps {
@@ -176,7 +176,7 @@ export default function PackOpening({
 
   return (
     <div 
-      className={`fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 overflow-hidden transition-all duration-300 ${screenShake ? 'animate-[shake_0.5s_infinite]' : ''}`}
+      className={`fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-4 min-h-[100dvh] h-[100dvh] overflow-y-auto pb-28 sm:pb-6 transition-all duration-300 ${screenShake ? 'animate-[shake_0.5s_infinite]' : ''}`}
       id="pack-opening-container"
     >
       {/* Absolute CSS Shake keyframe injecting dynamically */}
@@ -194,6 +194,17 @@ export default function PackOpening({
           100% { transform: translate(0, 0) rotate(0deg); }
         }
       `}</style>
+
+      {/* FIXED CLOSE "X" BUTTON FOR MOBILE & DESKTOP */}
+      <button
+        onClick={onClose}
+        className="fixed top-4 right-4 z-[9999] p-2.5 bg-black/80 hover:bg-neutral-800 border border-white/20 text-white rounded-full shadow-2xl backdrop-blur-md transition-all flex items-center justify-center active:scale-95 cursor-pointer"
+        title="Fechar e voltar ao álbum"
+        aria-label="Fechar"
+        id="pack-opening-close-x-btn"
+      >
+        <X className="w-6 h-6 text-white" />
+      </button>
 
       {/* Floating Sparkles & Stadium Background Lights */}
       <div className="absolute inset-0 pointer-events-none opacity-40">
@@ -213,11 +224,11 @@ export default function PackOpening({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.1, opacity: 0 }}
-            className="flex flex-col items-center max-w-sm text-center"
+            className="flex flex-col items-center max-w-sm text-center my-auto py-6"
             id="sealed-pack-view"
           >
             {/* Title Badge */}
-            <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-full text-xs uppercase font-mono tracking-wider">
+            <div className="mb-3 sm:mb-4 inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-full text-xs uppercase font-mono tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               Pacote de Figurinhas Oficial
             </div>
@@ -225,7 +236,7 @@ export default function PackOpening({
             {/* Pack Foil Graphic */}
             <motion.div
               animate={{ 
-                y: [0, -10, 0],
+                y: [0, -8, 0],
                 rotate: [0, 0.5, -0.5, 0]
               }}
               transition={{
@@ -234,7 +245,7 @@ export default function PackOpening({
                 ease: "easeInOut"
               }}
               onClick={handleOpenPack}
-              className="relative w-64 h-[380px] rounded-2xl cursor-pointer bg-gradient-to-b from-neutral-800 via-neutral-900 to-black border-4 border-brand-blue shadow-[0_0_40px_rgba(0,153,214,0.35)] flex flex-col justify-between p-6 overflow-hidden select-none hover:scale-105 transition-all group"
+              className="relative w-56 h-[340px] sm:w-64 sm:h-[380px] rounded-2xl cursor-pointer bg-gradient-to-b from-neutral-800 via-neutral-900 to-black border-4 border-brand-blue shadow-[0_0_40px_rgba(0,153,214,0.35)] flex flex-col justify-between p-5 sm:p-6 overflow-hidden select-none hover:scale-105 transition-all group"
             >
               {/* Foil lines design */}
               <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%)] bg-[length:250px_250px]" />
@@ -247,8 +258,8 @@ export default function PackOpening({
               </div>
 
               {/* Pack Crest */}
-              <div className="flex flex-col items-center mt-6">
-                <div className="w-24 h-24 overflow-hidden rounded-full border-2 border-brand-blue-glow shadow-md group-hover:scale-110 transition-transform duration-300 flex items-center justify-center bg-brand-dark">
+              <div className="flex flex-col items-center mt-4 sm:mt-6">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden rounded-full border-2 border-brand-blue-glow shadow-md group-hover:scale-110 transition-transform duration-300 flex items-center justify-center bg-brand-dark">
                   <img 
                     src={packCover} 
                     alt="Copa Astão 2026" 
@@ -256,28 +267,28 @@ export default function PackOpening({
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <h3 className="font-display text-2xl uppercase tracking-wide text-white mt-4">
+                <h3 className="font-display text-xl sm:text-2xl uppercase tracking-wide text-white mt-3 sm:mt-4">
                   COPA ASTÃO
                 </h3>
-                <span className="text-[10px] font-mono tracking-widest text-brand-blue-glow bg-brand-blue/10 border border-brand-blue/20 px-2.5 py-0.5 rounded-sm uppercase">
+                <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-brand-blue-glow bg-brand-blue/10 border border-brand-blue/20 px-2.5 py-0.5 rounded-sm uppercase">
                   Álbum Oficial 2026
                 </span>
               </div>
 
               {/* Middle Graphics */}
               <div className="text-center">
-                <div className="font-display text-4xl text-brand-gold font-bold tracking-tight">
+                <div className="font-display text-3xl sm:text-4xl text-brand-gold font-bold tracking-tight">
                   3 cartas
                 </div>
-                <div className="text-[10px] text-gray-400 font-mono tracking-wider mt-1 uppercase">
+                <div className="text-[9px] sm:text-[10px] text-gray-400 font-mono tracking-wider mt-0.5 uppercase">
                   Sorteio Real em Servidor
                 </div>
               </div>
 
               {/* Bottom Pack details */}
-              <div className="text-center mb-2 z-10">
-                <span className="text-[10px] font-semibold text-white/50 block">CLIQUE PARA RASGAR</span>
-                <div className="h-1 w-20 bg-brand-blue mx-auto mt-1 rounded-full group-hover:w-28 transition-all" />
+              <div className="text-center mb-1 sm:mb-2 z-10">
+                <span className="text-[9px] sm:text-[10px] font-semibold text-white/50 block">CLIQUE PARA RASGAR</span>
+                <div className="h-1 w-16 sm:w-20 bg-brand-blue mx-auto mt-1 rounded-full group-hover:w-28 transition-all" />
               </div>
 
               {/* Metallic corner shines */}
@@ -285,7 +296,7 @@ export default function PackOpening({
             </motion.div>
 
             {/* Hint message */}
-            <p className="text-gray-400 text-sm mt-6">
+            <p className="text-gray-400 text-xs sm:text-sm mt-4 sm:mt-6">
               Toque no pacotinho para iniciar a abertura épica!
             </p>
           </motion.div>
@@ -297,7 +308,7 @@ export default function PackOpening({
             key="exploding"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center text-center z-10"
+            className="flex flex-col items-center justify-center text-center z-10 my-auto"
             id="pack-explosion-view"
           >
             {/* Glowing orb inside pack center */}
@@ -333,7 +344,7 @@ export default function PackOpening({
             <motion.h2 
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: [1, 1.3, 1], opacity: 1 }}
-              className="font-display text-4xl text-white tracking-widest uppercase mt-6 animate-pulse"
+              className="font-display text-2xl sm:text-4xl text-white tracking-widest uppercase mt-6 animate-pulse"
             >
               RASGANDO ENVELOPE...
             </motion.h2>
@@ -347,19 +358,19 @@ export default function PackOpening({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center w-full max-w-md"
+            className="flex flex-col items-center justify-between sm:justify-center w-full max-w-md my-auto py-2 sm:py-4 min-h-[calc(100dvh-90px)] sm:min-h-0"
             id="card-reveal-view"
           >
-            <div className="text-center mb-6">
-              <span className="font-mono text-xs tracking-widest text-brand-blue-glow block uppercase mb-1">
+            <div className="text-center mb-2 sm:mb-6">
+              <span className="font-mono text-[10px] sm:text-xs tracking-widest text-brand-blue-glow block uppercase mb-0.5 sm:mb-1">
                 REVELAÇÃO DE CARTAS ({currentCardIndex + 1} de 3)
               </span>
-              <h2 className="font-display text-2xl text-white uppercase tracking-wider">
+              <h2 className="font-display text-lg sm:text-2xl text-white uppercase tracking-wider">
                 {stickers[currentCardIndex]?.rarity === 'Legend' ? (
                   <span className="text-brand-gold animate-bounce flex items-center justify-center gap-1.5">
-                    <Sparkles className="w-5 h-5 fill-brand-gold text-amber-200" />
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-brand-gold text-amber-200" />
                     ITEM LENDÁRIO ENCONTRADO!
-                    <Sparkles className="w-5 h-5 fill-brand-gold text-amber-200" />
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-brand-gold text-amber-200" />
                   </span>
                 ) : (
                   "CARTA OBTIDA"
@@ -368,12 +379,12 @@ export default function PackOpening({
             </div>
 
             {/* Displaying Current Card with animated entrance flip */}
-            <div className="relative mb-8 min-h-[450px] md:min-h-[660px] flex items-center justify-center w-full">
+            <div className="relative mb-4 sm:mb-8 min-h-[280px] xs:min-h-[320px] sm:min-h-[450px] md:min-h-[660px] flex items-center justify-center w-full max-w-[220px] xs:max-w-[260px] sm:max-w-[380px] md:max-w-[520px] mx-auto">
               {/* Specialized visual effects for Legends */}
               {stickers[currentCardIndex]?.rarity === 'Legend' && (
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0 scale-125">
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0 scale-100 sm:scale-125">
                   {/* Glowing background circles */}
-                  <div className="absolute w-72 h-72 rounded-full bg-brand-gold/20 blur-3xl animate-pulse" />
+                  <div className="absolute w-48 h-48 sm:w-72 sm:h-72 rounded-full bg-brand-gold/20 blur-3xl animate-pulse" />
                   
                   {/* Floating gold glitter particles */}
                   {Array.from({ length: 15 }).map((_, i) => (
@@ -406,7 +417,7 @@ export default function PackOpening({
                   animate={{ rotateY: 0, scale: 1, opacity: 1 }}
                   exit={{ rotateY: -90, scale: 0.7, opacity: 0 }}
                   transition={{ type: 'spring', damping: 15, stiffness: 100 }}
-                  className="z-10 w-full max-w-[520px] flex justify-center mx-auto"
+                  className="z-10 w-full flex justify-center mx-auto"
                 >
                   <Card3D 
                     sticker={stickers[currentCardIndex]} 
@@ -422,7 +433,7 @@ export default function PackOpening({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleNextCard}
-              className="px-8 py-3.5 bg-brand-blue text-white rounded-xl font-display text-lg tracking-wider uppercase border-b-4 border-sky-700 shadow-lg shadow-sky-900/30 flex items-center gap-2"
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-xs sm:static sm:translate-x-0 sm:w-auto z-[9999] px-6 py-3.5 sm:px-8 sm:py-3.5 bg-brand-blue text-white rounded-xl font-display text-base sm:text-lg tracking-wider uppercase border-b-4 border-sky-700 shadow-2xl shadow-sky-900/50 flex items-center justify-center gap-2 backdrop-blur-md"
               id="next-card-btn"
             >
               {currentCardIndex < 2 ? (
@@ -447,39 +458,39 @@ export default function PackOpening({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="flex flex-col items-center w-full max-w-4xl text-center"
+            className="flex flex-col items-center w-full max-w-4xl text-center my-auto py-2 sm:py-4"
             id="summary-pack-view"
           >
             {/* Celebration Title */}
-            <div className="mb-4">
-              <span className="font-mono text-xs text-brand-gold-glow tracking-widest uppercase block">
+            <div className="mb-2 sm:mb-4">
+              <span className="font-mono text-[10px] sm:text-xs text-brand-gold-glow tracking-widest uppercase block">
                 PACOTE ABERTO COM SUCESSO!
               </span>
-              <h2 className="font-display text-4xl text-white tracking-wider uppercase mt-1">
+              <h2 className="font-display text-xl sm:text-4xl text-white tracking-wider uppercase mt-0.5">
                 SUAS NOVAS FIGURINHAS
               </h2>
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 px-2">
                 Estas figurinhas foram adicionadas automaticamente ao banco do seu álbum.
               </p>
             </div>
 
             {/* 3 Cards Grid side-by-side */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-8 justify-center w-full max-w-3xl px-4">
+            <div className="grid grid-cols-3 gap-1.5 xs:gap-3 sm:gap-6 my-2 sm:my-8 justify-center items-center w-full max-w-3xl px-1 sm:px-4">
               {stickers.map((sticker, idx) => (
                 <motion.div
                   key={sticker.id}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.2, type: 'spring', damping: 12 }}
-                  className="flex justify-center"
+                  className="flex justify-center max-w-[105px] xs:max-w-[130px] sm:max-w-none mx-auto w-full"
                 >
-                  <Card3D sticker={sticker} size="md" interactive={true} />
+                  <Card3D sticker={sticker} size="sm" interactive={true} />
                 </motion.div>
               ))}
             </div>
 
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-2 justify-center">
+            {/* Action buttons fixed at bottom on mobile, static on desktop */}
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-xs sm:max-w-none sm:static sm:translate-x-0 sm:w-auto z-[9999] flex flex-col sm:flex-row gap-2.5 sm:gap-4 justify-center items-center p-2 sm:p-0 bg-neutral-950/90 sm:bg-transparent rounded-2xl sm:rounded-none backdrop-blur-md sm:backdrop-blur-none border border-white/10 sm:border-none shadow-2xl">
               {userProfile && userProfile.repeatedStickers >= 5 && onClaimRecyclePack && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -490,10 +501,10 @@ export default function PackOpening({
                     setCurrentCardIndex(0);
                     await onClaimRecyclePack();
                   }}
-                  className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display text-lg tracking-wider uppercase font-bold rounded-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:px-8 sm:py-4 bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display text-xs sm:text-lg tracking-wider uppercase font-bold rounded-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2"
                 >
-                  <RefreshCw className={`w-5 h-5 ${isRecycling ? 'animate-spin' : ''}`} />
-                  Trocar Repetidas por Pacote Grátis ({userProfile.repeatedStickers} Repetidas)
+                  <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${isRecycling ? 'animate-spin' : ''}`} />
+                  Trocar Repetidas ({userProfile.repeatedStickers})
                 </motion.button>
               )}
 
@@ -501,7 +512,7 @@ export default function PackOpening({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="px-8 py-4 bg-brand-blue text-white rounded-xl font-display text-lg tracking-wider uppercase border-b-4 border-sky-700 shadow-lg shadow-sky-900/30 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-brand-blue text-white rounded-xl font-display text-sm sm:text-lg tracking-wider uppercase border-b-4 border-sky-700 shadow-xl shadow-black/80 flex items-center justify-center gap-2"
                 id="finish-open-pack-btn"
               >
                 <RotateCcw className="w-5 h-5" />
