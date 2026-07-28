@@ -321,68 +321,83 @@ function RewardsBannerSection({
           </div>
 
           {/* Featured Prizes Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {config.useSystemPrizes && systemPrizes.length > 0 ? (
               systemPrizes.map((prize, idx) => (
                 <motion.div
                   key={prize.id}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-4 rounded-2xl border flex items-center gap-3.5 shadow-lg backdrop-blur-md transition-all text-left group"
+                  whileHover={{ y: -6, scale: 1.04 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center text-center gap-3 shadow-2xl backdrop-blur-xl transition-all duration-300 group hover:border-amber-400 hover:shadow-amber-500/20"
                   style={{
-                    backgroundColor: config.colors?.cardBackgroundColor || 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
+                    backgroundColor: config.colors?.cardBackgroundColor || 'rgba(18, 18, 18, 0.85)',
+                    borderColor: 'rgba(251, 191, 36, 0.4)'
                   }}
                 >
+                  {/* Prize Image */}
                   {prize.imageUrl ? (
-                    <div className="w-11 h-11 rounded-xl bg-black/40 overflow-hidden shrink-0 border border-white/20 p-1 flex items-center justify-center group-hover:border-amber-400/60 transition-colors">
-                      <img src={prize.imageUrl} alt={prize.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl bg-black/60 overflow-hidden shrink-0 border-2 border-amber-400/80 p-3 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 group-hover:border-amber-300 transition-all duration-300">
+                      <img src={prize.imageUrl} alt={prize.name} className="w-full h-full object-contain drop-shadow-md" referrerPolicy="no-referrer" />
                     </div>
                   ) : (
-                    <div className="w-11 h-11 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 text-amber-300 rounded-xl flex items-center justify-center text-xl shrink-0 border border-amber-500/30">
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 bg-gradient-to-br from-amber-500/30 via-yellow-500/20 to-amber-700/30 text-amber-300 rounded-2xl flex items-center justify-center text-5xl sm:text-6xl shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-all duration-300">
                       {idx === 0 ? '⚽' : idx === 1 ? '👕' : idx === 2 ? '🧢' : '🏆'}
                     </div>
                   )}
-                  <div className="overflow-hidden space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider truncate group-hover:text-amber-300 transition-colors">
-                      {prize.name}
-                    </h4>
-                    <p className="text-[10px] text-gray-300 font-medium truncate">
-                      {prize.deliveryCriteria || prize.description || 'Premiação Exclusiva'}
+
+                  {/* Prize Name */}
+                  <h4 className="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide my-2 group-hover:text-amber-300 transition-colors leading-snug whitespace-normal break-words text-center">
+                    {prize.name}
+                  </h4>
+
+                  {/* Requirement Badge (full row, no clipping) */}
+                  {(prize.deliveryCriteria || prize.description) && (
+                    <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                      <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="whitespace-normal text-center break-words uppercase font-bold">
+                        {prize.deliveryCriteria || 'Sorteio ao completar o álbum'}
+                      </span>
+                    </div>
+                  )}
+
+                  {prize.description && prize.deliveryCriteria && (
+                    <p className="text-xs sm:text-sm text-gray-300 font-medium leading-relaxed whitespace-normal text-center break-words pt-1">
+                      {prize.description}
                     </p>
-                  </div>
+                  )}
                 </motion.div>
               ))
             ) : (
               config.featuredItems.map((item) => (
                 <motion.div
                   key={item.id}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-4 rounded-2xl border flex items-center gap-3.5 shadow-lg backdrop-blur-md transition-all text-left group"
+                  whileHover={{ y: -6, scale: 1.04 }}
+                  transition={{ duration: 0.3 }}
+                  className="p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center text-center gap-3 shadow-2xl backdrop-blur-xl transition-all duration-300 group hover:border-amber-400 hover:shadow-amber-500/20"
                   style={{
-                    backgroundColor: config.colors?.cardBackgroundColor || 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
+                    backgroundColor: config.colors?.cardBackgroundColor || 'rgba(18, 18, 18, 0.85)',
+                    borderColor: 'rgba(251, 191, 36, 0.4)'
                   }}
                 >
-                  <div className="w-11 h-11 bg-gradient-to-br from-amber-500/20 to-yellow-500/10 text-2xl rounded-xl flex items-center justify-center shrink-0 border border-white/10 group-hover:border-amber-400/50 transition-colors">
+                  <div className="w-36 h-36 sm:w-44 sm:h-44 bg-gradient-to-br from-amber-500/30 via-yellow-500/20 to-amber-700/30 text-5xl sm:text-6xl rounded-2xl flex items-center justify-center shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-all duration-300">
                     {item.icon || '🏆'}
                   </div>
-                  <div className="overflow-hidden space-y-0.5">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider truncate group-hover:text-amber-300 transition-colors">
-                      {item.title}
-                    </h4>
-                    {item.subtitle && (
-                      <p className="text-[10px] text-gray-300 font-medium truncate">{item.subtitle}</p>
-                    )}
-                  </div>
+                  <h4 className="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide my-2 group-hover:text-amber-300 transition-colors leading-snug whitespace-normal break-words text-center">
+                    {item.title}
+                  </h4>
+                  {item.subtitle && (
+                    <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                      <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="whitespace-normal text-center break-words uppercase font-bold">{item.subtitle}</span>
+                    </div>
+                  )}
                 </motion.div>
               ))
             )}
           </div>
 
           {/* Action Buttons Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 max-w-md mx-auto">
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
@@ -449,23 +464,23 @@ function RewardsBannerSection({
               </button>
             </div>
 
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+            <div className="space-y-5 max-h-[65vh] overflow-y-auto pr-1">
               {systemPrizes.length > 0 ? (
                 systemPrizes.map((p) => (
-                  <div key={p.id} className="p-4 bg-brand-dark/80 border border-white/10 rounded-2xl flex flex-col sm:flex-row items-center gap-4 text-left">
-                    <div className="w-20 h-20 bg-black/40 rounded-xl p-2 shrink-0 border border-white/10 flex items-center justify-center">
-                      <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                  <div key={p.id} className="p-6 bg-gradient-to-br from-brand-surface via-brand-dark to-black/90 border-2 border-amber-400/40 rounded-3xl flex flex-col items-center text-center gap-4 shadow-2xl hover:scale-[1.02] hover:border-amber-400 hover:shadow-amber-500/20 transition-all duration-300">
+                    <div className="w-36 h-36 sm:w-44 sm:h-44 bg-black/60 rounded-2xl p-3 shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 flex items-center justify-center">
+                      <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" referrerPolicy="no-referrer" />
                     </div>
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-display text-base text-amber-300 font-extrabold uppercase">{p.name}</h4>
-                        <span className="text-[10px] font-mono text-gray-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                          Qtd: {p.quantity}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-300">{p.description}</p>
-                      <div className="text-[11px] font-mono text-brand-blue-glow pt-1">
-                        🏆 Critério: <strong className="text-white">{p.deliveryCriteria}</strong>
+                    <div className="space-y-3 flex-1 w-full flex flex-col items-center text-center">
+                      <h4 className="font-display text-xl sm:text-2xl text-amber-300 font-bold uppercase tracking-wide whitespace-normal text-center my-1">{p.name}</h4>
+                      
+                      {p.description && (
+                        <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-medium whitespace-normal text-center break-words">{p.description}</p>
+                      )}
+
+                      <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                        <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span className="whitespace-normal text-center break-words uppercase font-bold">{p.deliveryCriteria || 'Sorteio ao completar o álbum'}</span>
                       </div>
                     </div>
                   </div>
@@ -539,9 +554,17 @@ export default function HomeTab({
   }, []);
 
   return (
-    <div className="space-y-12 pb-16" id="home-view">
+    <div className="space-y-10 pb-16" id="home-view">
       
-      {/* 1. HERO BANNER MAIN */}
+      {/* 1. EVENT COUNTDOWN BANNER (No topo da área principal, logo abaixo da Navbar) */}
+      <EventCountdownSection
+        onNavigateToAlbum={onNavigateToAlbum}
+        onNavigateToRanking={onNavigateToRanking}
+        onNavigateToLogin={onNavigateToLogin}
+        onOpenPack={onOpenPack}
+      />
+
+      {/* 2. HERO BANNER MAIN */}
       <section className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-white/5 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
         
         {/* Ambient Glow */}
@@ -636,7 +659,7 @@ export default function HomeTab({
         onNavigateToRanking={onNavigateToRanking} 
       />
 
-      {/* 2. LOGGED PLAYER QUICK STATUS & OPEN PACK STATION */}
+      {/* 3. LOGGED PLAYER QUICK STATUS & OPEN PACK STATION */}
       {userProfile && (
         <section className="bg-gradient-to-b from-neutral-900 to-brand-surface border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
@@ -734,123 +757,7 @@ export default function HomeTab({
         </section>
       )}
 
-      {/* 3. EVENT COUNTDOWN */}
-      <EventCountdownSection
-        onNavigateToAlbum={onNavigateToAlbum}
-        onNavigateToRanking={onNavigateToRanking}
-        onNavigateToLogin={onNavigateToLogin}
-        onOpenPack={onOpenPack}
-      />
-
-      {/* 4. GOLDEN LEGENDS SECTION */}
-      <section className="space-y-6">
-        <div className="flex justify-between items-end border-b border-white/5 pb-3">
-          <div>
-            <span className="text-[10px] font-mono tracking-widest text-brand-gold-glow uppercase block">
-              COLEÇÃO ESPECIAL
-            </span>
-            <h2 className="font-display text-2xl uppercase tracking-wider text-white">
-              Edição Lendas de Ouro
-            </h2>
-          </div>
-          <button 
-            onClick={onNavigateToAlbum}
-            className="text-xs font-semibold text-brand-blue-glow hover:text-white transition-colors uppercase tracking-wider"
-          >
-            Ver Álbum Completo →
-          </button>
-        </div>
-
-        <div className="bg-gradient-to-br from-neutral-900 via-neutral-950 to-amber-950/20 border border-brand-gold/20 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col lg:flex-row items-center gap-10">
-          
-          <div className="relative shrink-0 flex items-center justify-center py-4 w-full sm:w-auto">
-            <div className="absolute w-72 h-72 bg-brand-gold/10 rounded-full blur-[60px] pointer-events-none animate-pulse" />
-
-            <motion.div
-              whileHover={{ scale: 1.05, rotateZ: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              className="relative w-64 h-[350px] bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 rounded-2xl shadow-[0_20px_50px_rgba(229,184,11,0.25)] border-2 border-amber-300 flex flex-col justify-between overflow-hidden select-none cursor-pointer"
-            >
-              <div className="h-4 bg-amber-700/60 w-full flex justify-around items-center border-b border-amber-300/30">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="w-[1.5px] h-full bg-amber-500/40" />
-                ))}
-              </div>
-
-              <div className="flex-1 p-4 flex flex-col items-center justify-between text-center relative z-10">
-                <div className="px-3 py-1 bg-black/40 border border-amber-300/20 rounded-full text-[8px] font-bold text-brand-gold-glow uppercase tracking-widest font-mono">
-                  Edição Limitada
-                </div>
-
-                <div className="my-3 flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-black/50 border-2 border-brand-gold-glow flex items-center justify-center text-brand-gold-glow shadow-lg shadow-black/40 animate-pulse">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <div className="mt-3">
-                    <h3 className="font-display text-xl leading-none text-black uppercase font-black tracking-tight drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)]">
-                      Lendas de Ouro
-                    </h3>
-                    <p className="font-mono text-[9px] text-amber-950 font-bold tracking-widest uppercase mt-1">
-                      Astão Cup 2026
-                    </p>
-                  </div>
-                </div>
-
-                <div className="w-full bg-black/40 border border-amber-300/10 rounded-lg p-2.5 backdrop-blur-sm">
-                  <span className="text-[10px] text-brand-gold-glow font-mono uppercase tracking-widest block font-bold">
-                    6 Figurinhas Lendárias
-                  </span>
-                  <span className="text-[8px] text-gray-300 block font-sans mt-0.5">
-                    Raridades Raras no Álbum
-                  </span>
-                </div>
-              </div>
-
-              <div className="h-4 bg-amber-700/60 w-full flex justify-around items-center border-t border-amber-300/30">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="w-[1.5px] h-full bg-amber-500/40" />
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="flex-1 space-y-6 text-center lg:text-left z-10">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-brand-gold-glow rounded-full text-[10px] uppercase font-mono tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              CONTEÚDO EXCLUSIVO
-            </div>
-
-            <h3 className="font-display text-3xl sm:text-4xl text-white uppercase tracking-tight">
-              As <span className="text-brand-gold-glow drop-shadow-[0_0_10px_rgba(254,207,46,0.2)]">6 Lendas de Ouro</span>
-            </h3>
-
-            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-              Existem 6 figurinhas raras lendárias no álbum oficial da Copa Astão 2026. 
-              Elas contam com animações e reflexos holográficos em 3D únicos.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-xl p-3 text-left">
-                <HelpCircle className="w-5 h-5 text-brand-gold-glow shrink-0" />
-                <div>
-                  <h4 className="text-xs font-bold text-white uppercase font-mono">Como obter?</h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Abertura de pacotes por créditos de jogador.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 bg-white/5 border border-white/5 rounded-xl p-3 text-left">
-                <Gift className="w-5 h-5 text-brand-gold-glow shrink-0" />
-                <div>
-                  <h4 className="text-xs font-bold text-white uppercase font-mono">Efeito Holográfico</h4>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Cards especiais dourados com brilho real.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 5. FOOTER STATS */}
+      {/* 4. FOOTER STATS */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-white/5">
         <div className="bg-brand-surface/40 p-5 rounded-xl text-center border border-white/5">
           <div className="font-display text-3xl sm:text-4xl text-brand-blue-glow leading-none font-bold">100%</div>

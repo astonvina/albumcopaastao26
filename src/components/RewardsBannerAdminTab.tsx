@@ -238,27 +238,30 @@ export default function RewardsBannerAdminTab() {
             </div>
 
             {/* Featured Prizes Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto text-center">
               {config.useSystemPrizes && systemPrizes.length > 0 ? (
                 systemPrizes.map((p) => (
                   <div
                     key={p.id}
-                    className="p-3.5 rounded-xl border flex items-center gap-3 shadow-md backdrop-blur-sm"
+                    className="p-6 sm:p-7 rounded-3xl border-2 flex flex-col items-center text-center gap-3 shadow-xl backdrop-blur-md transition-all hover:border-amber-400 hover:scale-[1.02] duration-300"
                     style={{
-                      backgroundColor: config.colors?.cardBackgroundColor || 'rgba(255, 255, 255, 0.08)',
-                      borderColor: 'rgba(255, 255, 255, 0.12)'
+                      backgroundColor: config.colors?.cardBackgroundColor || 'rgba(18, 18, 18, 0.85)',
+                      borderColor: 'rgba(251, 191, 36, 0.4)'
                     }}
                   >
                     {p.imageUrl ? (
-                      <img src={p.imageUrl} alt={p.name} className="w-9 h-9 rounded-lg object-cover shrink-0 border border-white/20" referrerPolicy="no-referrer" />
+                      <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-2xl bg-black/60 overflow-hidden shrink-0 border-2 border-amber-400/80 p-2.5 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <img src={p.imageUrl} alt={p.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                      </div>
                     ) : (
-                      <div className="w-9 h-9 bg-brand-gold/20 text-brand-gold-glow rounded-lg flex items-center justify-center text-lg shrink-0">
+                      <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gradient-to-br from-amber-500/30 via-yellow-500/20 to-amber-700/30 text-amber-300 rounded-2xl flex items-center justify-center text-5xl shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20">
                         🏆
                       </div>
                     )}
-                    <div className="overflow-hidden">
-                      <h4 className="text-xs font-bold text-white uppercase truncate">{p.name}</h4>
-                      <p className="text-[10px] text-gray-300 truncate">{p.deliveryCriteria || p.description || 'Premiação Oficial'}</p>
+                    <h4 className="font-display text-lg sm:text-xl font-bold text-white uppercase tracking-wide my-1 whitespace-normal text-center">{p.name}</h4>
+                    <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                      <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="whitespace-normal text-center break-words uppercase font-bold">{p.deliveryCriteria || p.description || 'Sorteio ao completar o álbum'}</span>
                     </div>
                   </div>
                 ))
@@ -266,21 +269,22 @@ export default function RewardsBannerAdminTab() {
                 config.featuredItems.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-xl border flex items-center gap-3 shadow-md backdrop-blur-sm"
+                    className="p-6 sm:p-7 rounded-3xl border-2 flex flex-col items-center text-center gap-3 shadow-xl backdrop-blur-md transition-all hover:border-amber-400 hover:scale-[1.02] duration-300"
                     style={{
-                      backgroundColor: config.colors?.cardBackgroundColor || 'rgba(255, 255, 255, 0.08)',
-                      borderColor: 'rgba(255, 255, 255, 0.12)'
+                      backgroundColor: config.colors?.cardBackgroundColor || 'rgba(18, 18, 18, 0.85)',
+                      borderColor: 'rgba(251, 191, 36, 0.4)'
                     }}
                   >
-                    <div className="w-9 h-9 bg-white/10 text-xl rounded-lg flex items-center justify-center shrink-0 border border-white/10">
+                    <div className="w-36 h-36 sm:w-40 sm:h-40 bg-gradient-to-br from-amber-500/30 via-yellow-500/20 to-amber-700/30 text-5xl rounded-2xl flex items-center justify-center shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20">
                       {item.icon || '🏆'}
                     </div>
-                    <div className="overflow-hidden">
-                      <h4 className="text-xs font-bold text-white uppercase truncate">{item.title}</h4>
-                      {item.subtitle && (
-                        <p className="text-[10px] text-gray-300 truncate">{item.subtitle}</p>
-                      )}
-                    </div>
+                    <h4 className="font-display text-lg sm:text-xl font-bold text-white uppercase tracking-wide my-1 whitespace-normal text-center">{item.title}</h4>
+                    {item.subtitle && (
+                      <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                        <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span className="whitespace-normal text-center break-words uppercase font-bold">{item.subtitle}</span>
+                      </div>
+                    )}
                   </div>
                 ))
               )}

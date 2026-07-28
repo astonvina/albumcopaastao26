@@ -1264,23 +1264,26 @@ export default function AdminPanel({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {prizes.map((p) => (
-              <div key={p.id} className="bg-brand-surface border border-white/10 p-5 rounded-2xl space-y-3 relative overflow-hidden">
-                <div className="h-40 bg-black/40 rounded-xl overflow-hidden p-2 flex items-center justify-center border border-white/5">
-                  <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+              <div key={p.id} className="bg-gradient-to-br from-brand-surface via-brand-dark to-black/90 border-2 border-amber-400/40 p-6 sm:p-7 rounded-3xl flex flex-col items-center text-center gap-3 shadow-2xl hover:scale-105 hover:border-amber-400 hover:shadow-amber-500/20 transition-all duration-300 relative overflow-hidden group">
+                <div className="w-36 h-36 sm:w-44 sm:h-44 bg-black/60 rounded-2xl overflow-hidden p-3 flex items-center justify-center border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 group-hover:scale-[1.03] transition-transform duration-300 shrink-0">
+                  <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" referrerPolicy="no-referrer" />
                 </div>
-                <div>
-                  <h3 className="font-display text-base font-bold text-white uppercase">{p.name}</h3>
-                  <p className="text-xs text-gray-400 leading-relaxed mt-1">{p.description}</p>
+                <h3 className="font-display text-xl font-bold text-white uppercase tracking-wide group-hover:text-amber-300 transition-colors my-1 whitespace-normal text-center">{p.name}</h3>
+                
+                {p.description && (
+                  <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium whitespace-normal text-center break-words">{p.description}</p>
+                )}
+
+                <div className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 text-xs font-semibold whitespace-normal text-center break-words shadow-sm">
+                  <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="whitespace-normal text-center break-words uppercase font-bold">{p.deliveryCriteria || 'Sorteio ao completar o álbum'}</span>
                 </div>
-                <div className="text-[11px] font-mono text-brand-gold bg-black/30 p-2 rounded-lg border border-white/5">
-                  🏆 Critério: {p.deliveryCriteria}
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t border-white/10">
-                  <span className="text-xs text-gray-400">Qtd: {p.quantity} unid.</span>
-                  <button onClick={() => handleDeletePrize(p.id)} className="text-red-400 hover:text-red-300 text-xs font-bold">
-                    Excluir
+
+                <div className="w-full flex justify-center pt-2 border-t border-white/10 mt-1">
+                  <button onClick={() => handleDeletePrize(p.id)} className="text-red-400 hover:text-red-300 text-xs font-bold px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-colors">
+                    Excluir Prêmio
                   </button>
                 </div>
               </div>
