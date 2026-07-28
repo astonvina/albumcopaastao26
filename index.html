@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+    <script>
+      window.process = {
+        env: { NODE_ENV: 'production' },
+        cwd: function() { return '/'; },
+        nextTick: function(fn) { setTimeout(fn, 0); }
+      };
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>

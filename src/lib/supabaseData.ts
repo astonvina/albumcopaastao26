@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 export { supabase, isSupabaseConfigured };
-import { dbInstance } from '../db/db';
 import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer } from '../types';
 import { DEFAULT_TEAMS_LIST, DEFAULT_COUNTDOWN_CONFIG, DEFAULT_REWARDS_BANNER_CONFIG } from '../context/SystemSettingsContext';
 
@@ -862,9 +861,9 @@ export async function resetAllPlayersAlbumsInSupabase(): Promise<boolean> {
   }
 
   try {
-    dbInstance.resetSystem();
+    await fetch('/api/admin/reset', { method: 'POST' }).catch(() => {});
   } catch (err) {
-    console.error('Error calling dbInstance.resetSystem:', err);
+    console.error('Error triggering server reset endpoint:', err);
   }
 
   if (typeof window !== 'undefined') {
