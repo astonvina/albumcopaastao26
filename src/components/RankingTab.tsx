@@ -3,14 +3,10 @@ import {
   RankingPlayer, 
   RankingStats, 
   RankingEvent, 
-  FirstChampionInfo, 
-  PublicPlayerProfile 
+  FirstChampionInfo
 } from '../types';
-import PublicProfileModal from './PublicProfileModal';
 import { 
-  getRankingFromSupabase, 
-  getPlayersFromSupabase, 
-  buildUserProfile 
+  getRankingFromSupabase
 } from '../lib/supabaseData';
 import { 
   Trophy, 
@@ -27,7 +23,6 @@ import {
   Users, 
   Award, 
   Clock, 
-  Eye, 
   ChevronRight,
   TrendingUp,
   CheckCircle2
@@ -47,11 +42,6 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Modal State for Public Profile
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [modalProfile, setModalProfile] = useState<PublicPlayerProfile | null>(null);
-  const [loadingModal, setLoadingModal] = useState(false);
 
   // Fetch ranking data
   const fetchRanking = async (isManualRefresh = false) => {
@@ -80,42 +70,6 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
     } finally {
       setLoading(false);
       setRefreshing(false);
-    }
-  };
-
-  // Fetch public profile for modal
-  const handleOpenProfile = async (playerId: string) => {
-    setSelectedPlayerId(playerId);
-    setLoadingModal(true);
-    try {
-      const players = await getPlayersFromSupabase();
-      const player = players.find(p => p.id === playerId);
-      if (player) {
-        const profile = await buildUserProfile(player);
-        setModalProfile({
-          player: {
-            id: player.id,
-            nickname: player.nickname,
-            fullName: player.fullName,
-            team: player.team,
-            photoUrl: player.photoUrl,
-            completedAlbum: player.completedAlbum,
-            createdAt: player.createdAt
-          },
-          stats: {
-            uniqueStickers: profile.uniqueStickers,
-            totalStickers: profile.totalStickers,
-            progress: profile.collectionProgress,
-            legendsCount: profile.legendsCount,
-            repeatedStickers: profile.repeatedStickers
-          },
-          recentStickers: []
-        });
-      }
-    } catch (err) {
-      console.error('Error fetching public profile:', err);
-    } finally {
-      setLoadingModal(false);
     }
   };
 
@@ -323,14 +277,13 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             {/* 2nd PLACE - SILVER */}
             {top2 && (
               <div 
-                onClick={() => handleOpenProfile(top2.id)}
-                className="order-2 md:order-1 bg-gradient-to-b from-slate-800/80 to-brand-surface border border-slate-400/30 rounded-2xl p-5 text-center cursor-pointer hover:border-slate-300/60 transition-all hover:scale-[1.02] shadow-xl relative group"
+                className="order-2 md:order-1 bg-gradient-to-b from-slate-800/80 to-brand-surface border border-slate-400/30 rounded-2xl p-5 text-center shadow-xl relative cursor-default"
               >
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-300 text-slate-950 text-xs font-mono font-bold px-3 py-0.5 rounded-full shadow-lg flex items-center gap-1">
                   <Medal className="w-3.5 h-3.5" /> 2º Lugar - Prata
                 </div>
 
-                <div className="w-20 h-20 mx-auto rounded-full border-2 border-slate-300 overflow-hidden bg-brand-dark my-3 shadow-lg group-hover:scale-105 transition-transform">
+                <div className="w-20 h-20 mx-auto rounded-full border-2 border-slate-300 overflow-hidden bg-brand-dark my-3 shadow-lg">
                   <img src={top2.photoUrl || '/escudo3atual2.png'} alt={top2.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
 
@@ -366,14 +319,13 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             {/* 1st PLACE - GOLD (CENTER / HIGHER) */}
             {top1 && (
               <div 
-                onClick={() => handleOpenProfile(top1.id)}
-                className="order-1 md:order-2 bg-gradient-to-b from-amber-950/60 via-brand-surface to-brand-surface border-2 border-amber-400/60 rounded-2xl p-6 text-center cursor-pointer hover:border-amber-300 transition-all hover:scale-[1.03] shadow-gold relative group md:-translate-y-3"
+                className="order-1 md:order-2 bg-gradient-to-b from-amber-950/60 via-brand-surface to-brand-surface border-2 border-amber-400/60 rounded-2xl p-6 text-center shadow-gold relative cursor-default md:-translate-y-3"
               >
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-300 text-black text-xs font-mono font-bold px-4 py-1 rounded-full shadow-gold flex items-center gap-1.5 animate-bounce">
                   <Crown className="w-4 h-4 text-black" /> 1º Lugar - Ouro
                 </div>
 
-                <div className="w-24 h-24 mx-auto rounded-full border-4 border-amber-400 overflow-hidden bg-brand-dark my-3 shadow-gold group-hover:scale-105 transition-transform">
+                <div className="w-24 h-24 mx-auto rounded-full border-4 border-amber-400 overflow-hidden bg-brand-dark my-3 shadow-gold">
                   <img src={top1.photoUrl || '/escudo3atual2.png'} alt={top1.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
 
@@ -409,14 +361,13 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             {/* 3rd PLACE - BRONZE */}
             {top3 && (
               <div 
-                onClick={() => handleOpenProfile(top3.id)}
-                className="order-3 bg-gradient-to-b from-amber-950/30 to-brand-surface border border-amber-700/40 rounded-2xl p-5 text-center cursor-pointer hover:border-amber-600/70 transition-all hover:scale-[1.02] shadow-xl relative group"
+                className="order-3 bg-gradient-to-b from-amber-950/30 to-brand-surface border border-amber-700/40 rounded-2xl p-5 text-center shadow-xl relative cursor-default"
               >
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-700 text-amber-100 text-xs font-mono font-bold px-3 py-0.5 rounded-full shadow-lg flex items-center gap-1">
                   <Medal className="w-3.5 h-3.5" /> 3º Lugar - Bronze
                 </div>
 
-                <div className="w-20 h-20 mx-auto rounded-full border-2 border-amber-600 overflow-hidden bg-brand-dark my-3 shadow-lg group-hover:scale-105 transition-transform">
+                <div className="w-20 h-20 mx-auto rounded-full border-2 border-amber-600 overflow-hidden bg-brand-dark my-3 shadow-lg">
                   <img src={top3.photoUrl || '/escudo3atual2.png'} alt={top3.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
 
@@ -470,7 +421,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             {recentEvents.map(evt => (
               <div 
                 key={evt.id} 
-                className="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 min-w-[260px] max-w-[320px] flex-shrink-0 hover:bg-white/10 transition-colors"
+                className="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 min-w-[260px] max-w-[320px] flex-shrink-0"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0">
                   <img src={evt.playerPhotoUrl || '/escudo3atual2.png'} alt={evt.playerNickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -499,7 +450,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
               Tabela de Classificação
             </h2>
             <p className="text-xs text-gray-400 font-mono">
-              Clique em qualquer jogador para visualizar o perfil completo e conquistas
+              Acompanhe o desempenho e a evolução de todos os colecionadores
             </p>
           </div>
 
@@ -536,13 +487,12 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 <th className="py-3 px-4 text-center">Legends</th>
                 <th className="py-3 px-4 text-center">Pacotes</th>
                 <th className="py-3 px-4 text-center">Última Figurinha</th>
-                <th className="py-3 px-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-xs font-mono">
               {filteredLeaderboard.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-400">
+                  <td colSpan={7} className="py-8 text-center text-gray-400">
                     Nenhum jogador encontrado para a busca "{searchTerm}".
                   </td>
                 </tr>
@@ -550,8 +500,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 filteredLeaderboard.map((p) => (
                   <tr 
                     key={p.id}
-                    onClick={() => handleOpenProfile(p.id)}
-                    className="hover:bg-white/5 transition-colors cursor-pointer group"
+                    className="hover:bg-white/[0.02] cursor-default"
                   >
                     {/* Rank */}
                     <td className="py-3.5 px-4 text-center">
@@ -569,12 +518,12 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                     {/* Player Info & Badges */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0 group-hover:border-brand-blue-glow transition-colors">
+                        <div className="w-9 h-9 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0">
                           <img src={p.photoUrl || '/escudo3atual2.png'} alt={p.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         </div>
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-white group-hover:text-brand-blue-glow transition-colors">
+                            <span className="font-bold text-white">
                               {p.nickname}
                             </span>
                             {p.completedAlbum && (
@@ -635,20 +584,6 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                     <td className="py-3.5 px-4 text-center text-gray-400 text-[10px]">
                       {formatRelativeTime(p.lastStickerAt)}
                     </td>
-
-                    {/* Action Button */}
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenProfile(p.id);
-                        }}
-                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-brand-blue-glow border border-brand-blue/20 rounded-lg text-[10px] uppercase font-bold flex items-center gap-1 ml-auto transition-colors"
-                      >
-                        <Eye className="w-3 h-3" />
-                        Ver Perfil
-                      </button>
-                    </td>
                   </tr>
                 ))
               )}
@@ -666,8 +601,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             filteredLeaderboard.map((p) => (
               <div
                 key={p.id}
-                onClick={() => handleOpenProfile(p.id)}
-                className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 cursor-pointer hover:bg-white/10 transition-colors relative"
+                className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 cursor-default relative"
               >
                 {/* Header info */}
                 <div className="flex items-center justify-between">
@@ -724,18 +658,6 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
         </div>
 
       </div>
-
-      {/* PUBLIC PROFILE MODAL */}
-      {selectedPlayerId && (
-        <PublicProfileModal
-          profile={modalProfile}
-          isLoading={loadingModal}
-          onClose={() => {
-            setSelectedPlayerId(null);
-            setModalProfile(null);
-          }}
-        />
-      )}
 
     </div>
   );
