@@ -124,8 +124,8 @@ export default function AdminPanel({
   const [packErrorMsg, setPackErrorMsg] = useState<string | null>(null);
 
   // Probability & System settings edit states
-  const [probNormal, setProbNormal] = useState(85);
-  const [probLegend, setProbLegend] = useState(15);
+  const [probNormal, setProbNormal] = useState(90);
+  const [probLegend, setProbLegend] = useState(10);
   const [initialFreePacks, setInitialFreePacks] = useState<number>(1);
   const [probSaveStatus, setProbSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [probErrorMsg, setProbErrorMsg] = useState('');
@@ -162,8 +162,8 @@ export default function AdminPanel({
     startDate: '',
     endDate: '',
     status: 'active',
-    normalProbability: 85,
-    legendProbability: 15
+    normalProbability: 90,
+    legendProbability: 10
   });
 
   // Prizes states

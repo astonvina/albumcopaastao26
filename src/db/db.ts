@@ -298,8 +298,8 @@ export class Database {
         packOpenLogs: [],
         recycleLogs: [],
         probabilitySettings: {
-          normalProbability: 85,
-          legendProbability: 15
+          normalProbability: 90,
+          legendProbability: 10
         },
         systemSettings: {
           countdownDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
@@ -742,8 +742,8 @@ export class Database {
       stickersCount: data.stickersCount || 30,
       playersCount: data.playersCount || 0,
       legendsCount: data.legendsCount || 6,
-      normalProbability: data.normalProbability || 85,
-      legendProbability: data.legendProbability || 15,
+      normalProbability: data.normalProbability || 90,
+      legendProbability: data.legendProbability || 10,
       createdAt: new Date().toISOString()
     };
 

@@ -721,6 +721,77 @@ export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer
 // 6. PACK OPENING & RECYCLING
 // ---------------------------------------------------------------------------
 
+function calculateStickerWeight(cardId: string, currentCounts: Record<string, number>, isAlbumCompleted: boolean): number {
+  if (isAlbumCompleted) {
+    return 1;
+  }
+  const count = currentCounts[cardId] || 0;
+  if (count === 0) return 100; // Uncollected card (anti-duplicate protection)
+  if (count === 1) return 25;  // Found once
+  if (count === 2) return 8;   // Found twice
+  return 2;                    // Found 3+ times
+}
+
+function weightedSelectSticker(candidates: Sticker[], currentCounts: Record<string, number>, isAlbumCompleted: boolean): Sticker {
+  if (candidates.length === 0) {
+    throw new Error('Nenhum candidato disponível para sorteio.');
+  }
+  if (candidates.length === 1) {
+    return candidates[0];
+  }
+
+  const weights = candidates.map(c => calculateStickerWeight(c.id, currentCounts, isAlbumCompleted));
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+  let roll = Math.random() * totalWeight;
+  for (let i = 0; i < candidates.length; i++) {
+    if (roll < weights[i]) {
+      return candidates[i];
+    }
+    roll -= weights[i];
+  }
+  return candidates[candidates.length - 1];
+}
+
+function drawPackStickers(allStickers: Sticker[], currentCounts: Record<string, number>, legendProbability: number = 10): Sticker[] {
+  const totalUniqueAvailable = allStickers.length;
+  const uniqueOwnedCount = Object.keys(currentCounts).filter(k => (currentCounts[k] || 0) > 0).length;
+  const isAlbumCompleted = uniqueOwnedCount >= totalUniqueAvailable && totalUniqueAvailable > 0;
+
+  const drawnStickers: Sticker[] = [];
+  const tempCounts = { ...currentCounts };
+
+  for (let i = 0; i < 3; i++) {
+    const roll = Math.random() * 100;
+    let targetRarity: 'Normal' | 'Legend' = roll < legendProbability ? 'Legend' : 'Normal';
+
+    let candidates = allStickers.filter(
+      s => s.rarity === targetRarity && !drawnStickers.some(sel => sel.id === s.id)
+    );
+
+    if (candidates.length === 0) {
+      const otherRarity = targetRarity === 'Normal' ? 'Legend' : 'Normal';
+      candidates = allStickers.filter(
+        s => s.rarity === otherRarity && !drawnStickers.some(sel => sel.id === s.id)
+      );
+    }
+
+    if (candidates.length === 0) {
+      candidates = allStickers.filter(s => !drawnStickers.some(sel => sel.id === s.id));
+    }
+
+    if (candidates.length === 0) {
+      candidates = allStickers;
+    }
+
+    const chosen = weightedSelectSticker(candidates, tempCounts, isAlbumCompleted);
+    drawnStickers.push(chosen);
+    tempCounts[chosen.id] = (tempCounts[chosen.id] || 0) + 1;
+  }
+
+  return drawnStickers;
+}
+
 export async function openPackFromSupabase(playerId: string): Promise<{ stickers: Sticker[]; userProfile: UserProfile }> {
   const players = await getPlayersFromSupabase();
   const player = players.find(p => p.id === playerId);
@@ -744,20 +815,16 @@ export async function openPackFromSupabase(playerId: string): Promise<{ stickers
     newPurchasedPacks--;
   }
 
-  // Draw 3 random stickers
+  // Draw 3 stickers with 10% Legend / 90% Normal probability & weighted anti-duplicate selection
   const allStickers = await getStickersFromSupabase();
   if (!allStickers || allStickers.length === 0) {
     throw new Error('Nenhuma figurinha cadastrada no sistema.');
   }
 
-  const drawnStickers: Sticker[] = [];
-  for (let i = 0; i < 3; i++) {
-    const idx = Math.floor(Math.random() * allStickers.length);
-    drawnStickers.push(allStickers[idx]);
-  }
+  const currentCollected = await getPlayerCollectedStickers(playerId);
+  const drawnStickers = drawPackStickers(allStickers, currentCollected, 10);
 
   // Update player collection
-  const currentCollected = await getPlayerCollectedStickers(playerId);
   drawnStickers.forEach(stk => {
     currentCollected[stk.id] = (currentCollected[stk.id] || 0) + 1;
   });
@@ -808,13 +875,9 @@ export async function claimRecyclePackFromSupabase(playerId: string): Promise<{ 
     if (removedCount >= 5) break;
   }
 
-  // Draw 3 random stickers
+  // Draw 3 stickers with 10% Legend / 90% Normal probability & weighted anti-duplicate selection
   const allStickers = await getStickersFromSupabase();
-  const drawnStickers: Sticker[] = [];
-  for (let i = 0; i < 3; i++) {
-    const idx = Math.floor(Math.random() * allStickers.length);
-    drawnStickers.push(allStickers[idx]);
-  }
+  const drawnStickers = drawPackStickers(allStickers, currentCollected, 10);
 
   drawnStickers.forEach(stk => {
     currentCollected[stk.id] = (currentCollected[stk.id] || 0) + 1;
