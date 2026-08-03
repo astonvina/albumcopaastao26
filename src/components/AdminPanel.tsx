@@ -63,6 +63,7 @@ import {
   savePrizeToSupabase, 
   deletePrizeFromSupabase, 
   getRankingFromSupabase,
+  getDashboardStatsFromSupabase,
   resetAllPlayersAlbumsInSupabase
 } from '../lib/supabaseData';
 
@@ -215,22 +216,12 @@ export default function AdminPanel({
   const fetchStatsAndData = async () => {
     setLoadingStats(true);
     try {
-      const [rankingData, playersData] = await Promise.all([
-        getRankingFromSupabase(),
+      const [dashboardStats, playersData] = await Promise.all([
+        getDashboardStatsFromSupabase(),
         getPlayersFromSupabase()
       ]);
 
-      const totalStickers = stickers.length || 30;
-      setStats({
-        totalPlayers: rankingData.stats.totalPlayers,
-        totalStickers: totalStickers,
-        completedAlbums: rankingData.stats.completedAlbumsCount,
-        totalPacksOpened: rankingData.stats.totalPacksOpened,
-        totalCardsDistributed: rankingData.stats.totalCardsDistributed,
-        totalLegendsDistributed: rankingData.stats.totalLegendsDistributed,
-        totalRepeatedCards: rankingData.stats.totalRepeatedCards
-      });
-
+      setStats(dashboardStats);
       setPlayersList(playersData);
       if (settings.initialFreePacks !== undefined) {
         setInitialFreePacks(settings.initialFreePacks);

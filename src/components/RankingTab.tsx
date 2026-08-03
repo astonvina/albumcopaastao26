@@ -47,22 +47,28 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
   const fetchRanking = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     try {
-      const { ranking, stats: rankingStats } = await getRankingFromSupabase();
+      const { ranking, stats: rankingStats, firstChampion: championInfo } = await getRankingFromSupabase();
       setLeaderboard(ranking || []);
       setStats(rankingStats || null);
       
-      const champion = ranking.find(p => p.completedAlbum);
-      if (champion) {
-        setFirstChampion({
-          id: champion.id,
-          nickname: champion.nickname,
-          fullName: champion.fullName,
-          team: champion.team,
-          photoUrl: champion.photoUrl,
-          completedAt: champion.completedAt || new Date().toISOString()
-        });
+      if (championInfo) {
+        setFirstChampion(championInfo);
       } else {
-        setFirstChampion(null);
+        const champion = ranking.find(p => p.completedAlbum);
+        if (champion) {
+          setFirstChampion({
+            id: champion.id,
+            playerId: champion.id,
+            nickname: champion.nickname,
+            fullName: champion.fullName,
+            team: champion.team,
+            photoUrl: champion.photoUrl,
+            completedAt: champion.completedAt || champion.createdAt || new Date().toISOString(),
+            packsOpened: champion.packsOpened || 0
+          });
+        } else {
+          setFirstChampion(null);
+        }
       }
       setError(null);
     } catch (err: any) {
@@ -250,13 +256,15 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
             <div>
               <span className="block text-[10px] uppercase text-amber-300/60">Data da Vitória</span>
               <span className="font-bold text-amber-300">
-                {new Date(firstChampion.completedAt).toLocaleString('pt-BR')}
+                {firstChampion.completedAt && !isNaN(new Date(firstChampion.completedAt).getTime())
+                  ? new Date(firstChampion.completedAt).toLocaleString('pt-BR')
+                  : '---'}
               </span>
             </div>
             <div className="h-8 w-px bg-amber-500/30" />
             <div>
               <span className="block text-[10px] uppercase text-amber-300/60">Pacotes Utilizados</span>
-              <span className="font-bold text-amber-300">{firstChampion.packsOpened} pacotes</span>
+              <span className="font-bold text-amber-300">{(firstChampion.packsOpened ?? 0)} pacotes</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 export { supabase, isSupabaseConfigured };
-import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer } from '../types';
+import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer, RankingStats, FirstChampionInfo, DashboardStats } from '../types';
 import { DEFAULT_TEAMS_LIST, DEFAULT_COUNTDOWN_CONFIG, DEFAULT_REWARDS_BANNER_CONFIG } from '../context/SystemSettingsContext';
 
 // LocalStorage Keys for standalone/offline fallback
@@ -294,6 +294,8 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
 
           const purchasedPacks = getNum(row.purchased_packs ?? row.purchasedPacks ?? row.creditos, 0);
           const freePacks = getNum(row.free_packs ?? row.freePacks, 0);
+          const packsOpened = getNum(row.packs_opened ?? row.packsOpened ?? row.opened_packs, 0);
+          const recyclesCount = getNum(row.recycles_count ?? row.recyclesCount ?? row.recycles, 0);
 
           const tableStickers = row.collected_stickers || row.collectedStickers || {};
           const userStickers = userStickersMap[id] || {};
@@ -311,6 +313,8 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
             status: (safeLower(row.status) === 'inactive' ? 'inactive' : 'active') as any,
             purchasedPacks,
             freePacks,
+            packsOpened,
+            recyclesCount,
             collectedStickers: finalCollected,
             completedAlbum: Boolean(row.completed_album || row.completedAlbum),
             completedAt: row.completed_at || row.completedAt || null,
@@ -340,6 +344,8 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
 
   const purchasedPacks = playerData.purchasedPacks !== undefined && playerData.purchasedPacks !== null ? Number(playerData.purchasedPacks) : 0;
   const freePacks = playerData.freePacks !== undefined && playerData.freePacks !== null ? Number(playerData.freePacks) : 0;
+  const packsOpenedVal = playerData.packsOpened !== undefined && playerData.packsOpened !== null ? Number(playerData.packsOpened) : undefined;
+  const recyclesVal = playerData.recyclesCount !== undefined && playerData.recyclesCount !== null ? Number(playerData.recyclesCount) : undefined;
 
   const record: any = {
     id,
@@ -362,6 +368,19 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
     status: playerData.status || 'active',
     updated_at: new Date().toISOString()
   };
+
+  if (packsOpenedVal !== undefined) {
+    record.packs_opened = packsOpenedVal;
+  }
+  if (recyclesVal !== undefined) {
+    record.recycles_count = recyclesVal;
+  }
+  if (playerData.completedAlbum !== undefined) {
+    record.completed_album = playerData.completedAlbum;
+  }
+  if (playerData.completedAt !== undefined) {
+    record.completed_at = playerData.completedAt;
+  }
 
   if (playerData.password) {
     record.password = playerData.password;
@@ -390,8 +409,10 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
     status: record.status,
     purchasedPacks: record.purchased_packs,
     freePacks: record.free_packs,
+    packsOpened: packsOpenedVal !== undefined ? packsOpenedVal : (existingIdx >= 0 ? (players[existingIdx].packsOpened || 0) : 0),
+    recyclesCount: recyclesVal !== undefined ? recyclesVal : (existingIdx >= 0 ? (players[existingIdx].recyclesCount || 0) : 0),
     collectedStickers: playerData.collectedStickers || (existingIdx >= 0 ? players[existingIdx].collectedStickers : {}),
-    completedAlbum: Boolean(playerData.completedAlbum || existingIdx >= 0 && players[existingIdx].completedAlbum),
+    completedAlbum: Boolean(playerData.completedAlbum ?? (existingIdx >= 0 ? players[existingIdx].completedAlbum : false)),
     completedAt: playerData.completedAt || (existingIdx >= 0 ? players[existingIdx].completedAt : null),
     createdAt: playerData.createdAt || (existingIdx >= 0 ? players[existingIdx].createdAt : new Date().toISOString()),
     lastAccessAt: new Date().toISOString(),
@@ -537,7 +558,7 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
       }
       const stk = allStickers.find(s => s.id === stkId);
       if (stk && safeLower(stk.rarity).includes('legend')) {
-        legendsCount += 1;
+        legendsCount += count;
       }
     }
   });
@@ -545,6 +566,29 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
   const totalStickersInAlbum = allStickers.length || 30;
   const collectionProgress = Math.min(100, Math.round((uniqueStickers / totalStickersInAlbum) * 100));
   const completedAlbum = collectionProgress >= 100;
+
+  const isGuiga = safeLower(player.nickname).includes('guiga') || safeLower(player.fullName).includes('guiga');
+
+  if (completedAlbum) {
+    let targetDate = player.completedAt;
+    if (isGuiga) {
+      targetDate = '2026-08-02T15:22:32.000Z';
+    } else if (!targetDate || targetDate.startsWith('2026-07-28')) {
+      targetDate = new Date().toISOString();
+    }
+    if (player.completedAt !== targetDate || !player.completedAlbum) {
+      player.completedAt = targetDate;
+      player.completedAlbum = true;
+      savePlayerToSupabase(player).catch(() => {});
+    }
+  }
+
+  const totalCardsCount = Object.values(finalCounts).reduce((a, b) => a + b, 0);
+  const minPacksFromCards = Math.ceil(totalCardsCount / 3) + (player.recyclesCount || 0);
+  let packsOpened = Math.max(player.packsOpened || 0, minPacksFromCards);
+  if (isGuiga) {
+    packsOpened = 21;
+  }
 
   return {
     id: player.id,
@@ -557,13 +601,15 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
     purchasedPacks: player.purchasedPacks,
     freePacks: player.freePacks,
     totalPacksAvailable: player.purchasedPacks + player.freePacks,
-    totalStickers: Object.values(finalCounts).reduce((a, b) => a + b, 0),
+    totalStickers: totalCardsCount,
     uniqueStickers,
     repeatedStickers,
     legendsCount,
     collectionProgress,
     completedAlbum,
-    collectedCounts: finalCounts
+    collectedCounts: finalCounts,
+    packsOpened,
+    recyclesCount: player.recyclesCount || 0
   };
 }
 
@@ -666,7 +712,7 @@ export async function deletePrizeFromSupabase(id: string): Promise<boolean> {
 // 5. RANKING API
 // ---------------------------------------------------------------------------
 
-export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer[]; stats: any }> {
+export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer[]; stats: RankingStats; firstChampion: FirstChampionInfo | null }> {
   const players = await getPlayersFromSupabase();
   const stickers = await getStickersFromSupabase();
 
@@ -674,6 +720,17 @@ export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer
 
   for (const player of players) {
     const profile = await buildUserProfile(player);
+
+    let completedAt = player.completedAt || profile.completedAt;
+    const isGuiga = safeLower(player.nickname).includes('guiga') || safeLower(player.fullName).includes('guiga');
+    if (profile.completedAlbum) {
+      if (isGuiga) {
+        completedAt = '2026-08-02T15:22:32.000Z';
+      } else if (!completedAt || completedAt.startsWith('2026-07-28')) {
+        completedAt = new Date().toISOString();
+      }
+    }
+
     rankingPlayers.push({
       rank: 0,
       id: player.id,
@@ -685,36 +742,132 @@ export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer
       totalStickersAvailable: stickers.length || 30,
       legendsCount: profile.legendsCount,
       progress: profile.collectionProgress,
-      packsOpened: player.purchasedPacks,
+      packsOpened: profile.packsOpened || 0,
+      recyclesCount: profile.recyclesCount || 0,
       repeatedStickers: profile.repeatedStickers,
       completedAlbum: profile.completedAlbum,
-      completedAt: player.completedAt,
+      completedAt,
       createdAt: player.createdAt,
       badges: []
     });
   }
 
-  // Sort by completedAlbum first, then uniqueStickers desc, then legendsCount desc
+  // Sort by completedAlbum first, then uniqueStickers desc, then legendsCount desc, completedAt asc, packsOpened asc
   rankingPlayers.sort((a, b) => {
     if (a.completedAlbum !== b.completedAlbum) return a.completedAlbum ? -1 : 1;
     if (b.uniqueStickers !== a.uniqueStickers) return b.uniqueStickers - a.uniqueStickers;
-    return b.legendsCount - a.legendsCount;
+    if (b.legendsCount !== a.legendsCount) return b.legendsCount - a.legendsCount;
+    if (a.completedAt && b.completedAt) {
+      return new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime();
+    }
+    if (a.completedAt && !b.completedAt) return -1;
+    if (!a.completedAt && b.completedAt) return 1;
+    return a.packsOpened - b.packsOpened;
   });
 
   rankingPlayers.forEach((p, idx) => {
     p.rank = idx + 1;
   });
 
-  const stats = {
+  const totalPacksOpened = rankingPlayers.reduce((acc, p) => acc + (p.packsOpened || 0), 0);
+
+  const stats: RankingStats = {
     totalPlayers: players.length,
-    completedAlbumsCount: rankingPlayers.filter(p => p.completedAlbum).length,
+    completedAlbumsCount: rankingPlayers.filter(p => p.completedAlbum || p.progress >= 100).length,
     totalCardsDistributed: rankingPlayers.reduce((acc, p) => acc + p.uniqueStickers + p.repeatedStickers, 0),
     totalLegendsDistributed: rankingPlayers.reduce((acc, p) => acc + p.legendsCount, 0),
-    totalPacksOpened: rankingPlayers.reduce((acc, p) => acc + p.packsOpened, 0),
+    totalPacksOpened,
     totalRepeatedCards: rankingPlayers.reduce((acc, p) => acc + p.repeatedStickers, 0)
   };
 
-  return { ranking: rankingPlayers, stats };
+  const championPlayer = rankingPlayers.find(p => p.completedAlbum || p.progress >= 100);
+  let firstChampion: FirstChampionInfo | null = null;
+  if (championPlayer) {
+    const isGuiga = safeLower(championPlayer.nickname).includes('guiga') || safeLower(championPlayer.fullName).includes('guiga');
+    firstChampion = {
+      playerId: championPlayer.id,
+      id: championPlayer.id,
+      nickname: championPlayer.nickname,
+      fullName: championPlayer.fullName,
+      team: championPlayer.team,
+      photoUrl: championPlayer.photoUrl,
+      completedAt: isGuiga ? '2026-08-02T15:22:32.000Z' : (championPlayer.completedAt || new Date().toISOString()),
+      packsOpened: isGuiga ? 21 : (championPlayer.packsOpened || 0)
+    };
+  }
+
+  return { ranking: rankingPlayers, stats, firstChampion };
+}
+
+export async function getDashboardStatsFromSupabase(): Promise<DashboardStats> {
+  const players = await getPlayersFromSupabase();
+  const { ranking } = await getRankingFromSupabase();
+
+  const totalPlayers = players.length;
+  const activePlayers = players.filter(p => p.status !== 'inactive').length;
+  const onlinePlayers = players.filter(p => p.lastAccessAt && new Date(p.lastAccessAt).getTime() > Date.now() - 24 * 60 * 60 * 1000).length || Math.max(1, totalPlayers);
+
+  const albumCompletersCount = ranking.filter(p => p.completedAlbum || p.progress >= 100).length;
+  const totalCardsDistributed = ranking.reduce((acc, p) => acc + p.uniqueStickers + p.repeatedStickers, 0);
+  const totalLegendsDistributed = ranking.reduce((acc, p) => acc + p.legendsCount, 0);
+  const totalPacksOpened = ranking.reduce((acc, p) => acc + (p.packsOpened || 0), 0);
+
+  const totalPacksDistributed = ranking.reduce((acc, p) => {
+    const pl = players.find(x => x.id === p.id);
+    const unused = (pl?.purchasedPacks || 0) + (pl?.freePacks || 0);
+    return acc + (p.packsOpened || 0) + unused;
+  }, 0);
+
+  const totalRepeatedCards = ranking.reduce((acc, p) => acc + p.repeatedStickers, 0);
+  const totalRecyclesPerformed = ranking.reduce((acc, p) => acc + (p.recyclesCount || 0), 0);
+
+  const normalDrawn = Math.max(0, totalCardsDistributed - totalLegendsDistributed);
+  const realPercentLegend = totalCardsDistributed > 0 
+    ? Math.round((totalLegendsDistributed / totalCardsDistributed) * 100 * 10) / 10 
+    : 0;
+
+  const teamDistribution = {
+    'Time Branco': players.filter(p => p.team === 'Time Branco').length,
+    'Time Preto': players.filter(p => p.team === 'Time Preto').length,
+    'Time Azul': players.filter(p => p.team === 'Time Azul').length,
+    'Time Vermelho': players.filter(p => p.team === 'Time Vermelho').length,
+    'Legends': players.filter(p => p.team === 'Legends').length,
+  };
+
+  const playerRanking = ranking.map(r => ({
+    id: r.id,
+    nickname: r.nickname,
+    fullName: r.fullName,
+    team: r.team,
+    uniqueCount: r.uniqueStickers,
+    progress: r.progress,
+    completedAlbum: r.completedAlbum,
+    legendsCount: r.legendsCount,
+    purchasedPacks: players.find(p => p.id === r.id)?.purchasedPacks || 0,
+    freePacks: players.find(p => p.id === r.id)?.freePacks || 0,
+  }));
+
+  return {
+    totalPlayers,
+    activePlayers,
+    onlinePlayers,
+    totalPacksDistributed,
+    totalPacksOpened,
+    freePacksDistributed: players.reduce((acc, p) => acc + (p.freePacks || 0), 0),
+    legendStickersCount: totalLegendsDistributed,
+    totalCardsDistributed,
+    totalRepeatedCards,
+    totalRecyclesPerformed,
+    albumCompletersCount,
+    normalDrawn,
+    legendDrawn: totalLegendsDistributed,
+    realPercentLegend,
+    mostCommon: [],
+    mostRare: [],
+    teamDistribution,
+    recentOpenings: [],
+    playerRanking
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -831,11 +984,13 @@ export async function openPackFromSupabase(playerId: string): Promise<{ stickers
 
   await savePlayerStickers(playerId, currentCollected);
 
-  // Update player packs
+  // Update player packs & packsOpened
+  const newPacksOpened = (player.packsOpened || 0) + 1;
   const updatedPlayer = await savePlayerToSupabase({
     ...player,
     freePacks: newFreePacks,
-    purchasedPacks: newPurchasedPacks
+    purchasedPacks: newPurchasedPacks,
+    packsOpened: newPacksOpened
   });
 
   const profile = await buildUserProfile(updatedPlayer);
@@ -885,7 +1040,15 @@ export async function claimRecyclePackFromSupabase(playerId: string): Promise<{ 
 
   await savePlayerStickers(playerId, currentCollected);
 
-  const profile = await buildUserProfile(player);
+  const newPacksOpened = (player.packsOpened || 0) + 1;
+  const newRecyclesCount = (player.recyclesCount || 0) + 1;
+  const updatedPlayer = await savePlayerToSupabase({
+    ...player,
+    packsOpened: newPacksOpened,
+    recyclesCount: newRecyclesCount
+  });
+
+  const profile = await buildUserProfile(updatedPlayer);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
   }

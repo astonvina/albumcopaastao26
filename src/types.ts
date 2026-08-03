@@ -26,6 +26,8 @@ export interface Player {
   status: 'active' | 'inactive';
   purchasedPacks: number;
   freePacks: number;
+  packsOpened?: number;
+  recyclesCount?: number;
   collectedStickers: Record<string, number>; // cardId -> count
   completedAlbum: boolean;
   completedAt?: string | null;
@@ -116,9 +118,12 @@ export interface UserProfile {
   legendsCount: number;
   collectionProgress: number;
   completedAlbum: boolean;
+  completedAt?: string | null;
   collectedCounts: Record<string, number>;
   obtainedDates?: Record<string, string>;
   lastOpeningAt?: string | null;
+  packsOpened?: number;
+  recyclesCount?: number;
 }
 
 export interface ProbabilitySettings {
@@ -192,6 +197,7 @@ export interface RankingPlayer {
   legendsCount: number;
   progress: number;
   packsOpened: number;
+  recyclesCount?: number;
   repeatedStickers: number;
   completedAlbum: boolean;
   completedAt?: string | null;
@@ -221,9 +227,11 @@ export interface RankingEvent {
 }
 
 export interface FirstChampionInfo {
-  playerId: string;
+  id?: string;
+  playerId?: string;
   nickname: string;
   fullName: string;
+  team?: string;
   photoUrl: string;
   completedAt: string;
   packsOpened: number;
