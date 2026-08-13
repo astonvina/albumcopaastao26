@@ -90,16 +90,10 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
       window.addEventListener('copa_astao_data_updated', handleDataUpdate);
     }
 
-    // Auto refresh ranking every 10 seconds for real-time experience
-    const interval = setInterval(() => {
-      fetchRanking(false);
-    }, 10000);
-
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('copa_astao_data_updated', handleDataUpdate);
       }
-      clearInterval(interval);
     };
   }, []);
 
@@ -230,6 +224,8 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 src={firstChampion.photoUrl || '/escudo3atual2.png'} 
                 alt={firstChampion.nickname} 
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute bottom-0 right-0 p-1 bg-amber-400 text-black rounded-full shadow">
@@ -292,7 +288,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 </div>
 
                 <div className="w-20 h-20 mx-auto rounded-full border-2 border-slate-300 overflow-hidden bg-brand-dark my-3 shadow-lg">
-                  <img src={top2.photoUrl || '/escudo3atual2.png'} alt={top2.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={top2.photoUrl || '/escudo3atual2.png'} alt={top2.nickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 </div>
 
                 <h3 className="font-display text-lg text-white uppercase tracking-wider flex items-center justify-center gap-1.5">
@@ -334,7 +330,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 </div>
 
                 <div className="w-24 h-24 mx-auto rounded-full border-4 border-amber-400 overflow-hidden bg-brand-dark my-3 shadow-gold">
-                  <img src={top1.photoUrl || '/escudo3atual2.png'} alt={top1.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={top1.photoUrl || '/escudo3atual2.png'} alt={top1.nickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 </div>
 
                 <h3 className="font-display text-xl text-amber-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
@@ -376,7 +372,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 </div>
 
                 <div className="w-20 h-20 mx-auto rounded-full border-2 border-amber-600 overflow-hidden bg-brand-dark my-3 shadow-lg">
-                  <img src={top3.photoUrl || '/escudo3atual2.png'} alt={top3.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={top3.photoUrl || '/escudo3atual2.png'} alt={top3.nickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 </div>
 
                 <h3 className="font-display text-lg text-white uppercase tracking-wider flex items-center justify-center gap-1.5">
@@ -432,7 +428,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                 className="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 min-w-[260px] max-w-[320px] flex-shrink-0"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0">
-                  <img src={evt.playerPhotoUrl || '/escudo3atual2.png'} alt={evt.playerNickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={evt.playerPhotoUrl || '/escudo3atual2.png'} alt={evt.playerNickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 </div>
                 <div className="flex-1 min-w-0 space-y-0.5">
                   <p className="text-xs text-white font-medium truncate">
@@ -527,7 +523,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0">
-                          <img src={p.photoUrl || '/escudo3atual2.png'} alt={p.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          <img src={p.photoUrl || '/escudo3atual2.png'} alt={p.nickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                         </div>
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5">
@@ -618,7 +614,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
                       {p.rank === 1 ? '🥇' : p.rank === 2 ? '🥈' : p.rank === 3 ? '🥉' : `#${p.rank}`}
                     </span>
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-brand-dark flex-shrink-0">
-                      <img src={p.photoUrl || '/escudo3atual2.png'} alt={p.nickname} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={p.photoUrl || '/escudo3atual2.png'} alt={p.nickname} className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">

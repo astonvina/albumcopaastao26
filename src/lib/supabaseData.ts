@@ -3,7 +3,7 @@ export { supabase, isSupabaseConfigured };
 import { Sticker, Player, UserProfile, Prize, SystemSettings, RankingPlayer, RankingStats, FirstChampionInfo, DashboardStats } from '../types';
 import { DEFAULT_TEAMS_LIST, DEFAULT_COUNTDOWN_CONFIG, DEFAULT_REWARDS_BANNER_CONFIG } from '../context/SystemSettingsContext';
 
-// LocalStorage Keys for standalone/offline fallback
+// LocalStorage Keys for standalone/offline fallback & caching
 const STORAGE_KEYS = {
   SETTINGS: 'copa_astao_settings_v2',
   PLAYERS: 'copa_astao_players_v2',
@@ -12,6 +12,48 @@ const STORAGE_KEYS = {
   PRIZES: 'copa_astao_prizes_v2',
   LOGS: 'copa_astao_logs_v2'
 };
+
+// ============================================================================
+// IN-MEMORY CACHE LAYER (Egress & Traffic Optimization)
+// ============================================================================
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const CACHE_TTL = {
+  STICKERS: 5 * 60 * 1000,    // 5 minutes
+  SETTINGS: 5 * 60 * 1000,    // 5 minutes
+  PRIZES: 5 * 60 * 1000,      // 5 minutes
+  PLAYERS: 60 * 1000,         // 60 seconds
+  RANKING: 60 * 1000          // 60 seconds
+};
+
+let memoryCache: {
+  stickers?: CacheEntry<Sticker[]>;
+  settings?: CacheEntry<SystemSettings>;
+  prizes?: CacheEntry<Prize[]>;
+  players?: CacheEntry<Player[]>;
+  ranking?: CacheEntry<{ ranking: RankingPlayer[]; stats: RankingStats; firstChampion: FirstChampionInfo | null }>;
+} = {};
+
+export function invalidateCache(scope: 'all' | 'stickers' | 'players' | 'ranking' | 'settings' | 'prizes' = 'all') {
+  if (scope === 'all') {
+    memoryCache = {};
+  } else if (scope === 'stickers') {
+    delete memoryCache.stickers;
+    delete memoryCache.ranking;
+  } else if (scope === 'players') {
+    delete memoryCache.players;
+    delete memoryCache.ranking;
+  } else if (scope === 'ranking') {
+    delete memoryCache.ranking;
+  } else if (scope === 'settings') {
+    delete memoryCache.settings;
+  } else if (scope === 'prizes') {
+    delete memoryCache.prizes;
+  }
+}
 
 // Default initial stickers if database is brand new
 const INITIAL_DEFAULT_STICKERS: Sticker[] = [
@@ -31,10 +73,15 @@ export function safeLower(val: any, fallback = ''): string {
 }
 
 // ---------------------------------------------------------------------------
-// 1. SYSTEM SETTINGS API
+// 1. SYSTEM SETTINGS API (Optimized Column Selection + In-Memory Cache)
 // ---------------------------------------------------------------------------
 
-export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
+export async function getSystemSettingsFromSupabase(forceRefresh = false): Promise<SystemSettings> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache.settings && (now - memoryCache.settings.timestamp < CACHE_TTL.SETTINGS)) {
+    return memoryCache.settings.data;
+  }
+
   const defaultSettings: SystemSettings = {
     countdownDate: '2026-11-01T08:00:00.000Z',
     activeChampionshipId: 'copa-astao-2026',
@@ -52,7 +99,11 @@ export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
 
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data: siteData, error } = await supabase.from('site_settings').select('*');
+      // Optimized: select only specific key/value columns
+      const { data: siteData, error } = await supabase
+        .from('site_settings')
+        .select('chave, valor, key, value');
+
       if (!error && siteData && Array.isArray(siteData) && siteData.length > 0) {
         const map: Record<string, any> = {};
         for (const row of siteData) {
@@ -66,7 +117,7 @@ export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
           }
         }
 
-        return {
+        const settingsResult: SystemSettings = {
           ...defaultSettings,
           countdownDate: map['countdown_date'] || map['countdownDate'] || defaultSettings.countdownDate,
           activeChampionshipId: map['active_championship_id'] || map['activeChampionshipId'] || defaultSettings.activeChampionshipId,
@@ -79,6 +130,10 @@ export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
           countdownConfig: typeof map['countdown_config'] === 'object' ? map['countdown_config'] : (typeof map['countdownConfig'] === 'object' ? map['countdownConfig'] : defaultSettings.countdownConfig),
           rewardsBannerConfig: typeof map['rewards_banner_config'] === 'object' ? map['rewards_banner_config'] : (typeof map['rewardsBannerConfig'] === 'object' ? map['rewardsBannerConfig'] : defaultSettings.rewardsBannerConfig)
         };
+
+        memoryCache.settings = { data: settingsResult, timestamp: now };
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settingsResult));
+        return settingsResult;
       }
     } catch (err) {
       console.warn('[Supabase Site Settings Fetch Error]:', err);
@@ -89,10 +144,13 @@ export async function getSystemSettingsFromSupabase(): Promise<SystemSettings> {
   const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (saved) {
     try {
-      return { ...defaultSettings, ...JSON.parse(saved) };
+      const parsed = { ...defaultSettings, ...JSON.parse(saved) };
+      memoryCache.settings = { data: parsed, timestamp: now };
+      return parsed;
     } catch {}
   }
 
+  memoryCache.settings = { data: defaultSettings, timestamp: now };
   return defaultSettings;
 }
 
@@ -133,6 +191,7 @@ export async function updateSystemSettingsInSupabase(newSettings: Partial<System
         }
       }
 
+      memoryCache.settings = { data: merged, timestamp: Date.now() };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(merged));
       return true;
     } catch (err) {
@@ -140,29 +199,42 @@ export async function updateSystemSettingsInSupabase(newSettings: Partial<System
     }
   }
 
+  memoryCache.settings = { data: merged, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(merged));
   return true;
 }
 
 // ---------------------------------------------------------------------------
-// 2. STICKERS API
+// 2. STICKERS API (Optimized Column Selection + In-Memory Cache)
 // ---------------------------------------------------------------------------
 
-export async function getStickersFromSupabase(): Promise<Sticker[]> {
+export async function getStickersFromSupabase(forceRefresh = false): Promise<Sticker[]> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache.stickers && (now - memoryCache.stickers.timestamp < CACHE_TTL.STICKERS)) {
+    return memoryCache.stickers.data;
+  }
+
   if (isSupabaseConfigured && supabase) {
     try {
       let rawData: any[] | null = null;
-      const { data, error } = await supabase.from('stickers').select('*').order('numero', { ascending: true });
+      // Optimized query requesting only required sticker columns
+      const { data, error } = await supabase
+        .from('stickers')
+        .select('id, numero, number, nome, name, time, team, imagem, image, photo_url, color, raridade, rarity, descricao, description, championship_id')
+        .order('numero', { ascending: true });
+
       if (!error && data) {
         rawData = data;
       } else {
-        // Fallback without ordering in case column index issue
-        const fallback = await supabase.from('stickers').select('*');
+        // Fallback with minimal select if ordered query fails
+        const fallback = await supabase
+          .from('stickers')
+          .select('id, numero, number, nome, name, time, team, imagem, image, photo_url, color, raridade, rarity, descricao, description');
         if (fallback.data) rawData = fallback.data;
       }
 
       if (rawData && rawData.length > 0) {
-        const mapped = rawData.map((row: any) => ({
+        const mapped: Sticker[] = rawData.map((row: any) => ({
           id: safeString(row.id),
           number: safeString(row.numero || row.number || '0'),
           name: safeString(row.nome || row.name || 'Figurinha'),
@@ -175,6 +247,9 @@ export async function getStickersFromSupabase(): Promise<Sticker[]> {
         }));
 
         mapped.sort((a, b) => (parseInt(a.number, 10) || 0) - (parseInt(b.number, 10) || 0));
+        
+        memoryCache.stickers = { data: mapped, timestamp: now };
+        localStorage.setItem(STORAGE_KEYS.STICKERS, JSON.stringify(mapped));
         return mapped;
       }
     } catch (err) {
@@ -185,9 +260,13 @@ export async function getStickersFromSupabase(): Promise<Sticker[]> {
   const saved = localStorage.getItem(STORAGE_KEYS.STICKERS);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      memoryCache.stickers = { data: parsed, timestamp: now };
+      return parsed;
     } catch {}
   }
+
+  memoryCache.stickers = { data: INITIAL_DEFAULT_STICKERS, timestamp: now };
   return INITIAL_DEFAULT_STICKERS;
 }
 
@@ -200,7 +279,6 @@ export async function saveStickerToSupabase(sticker: Partial<Sticker> & { numero
   const teamStr = safeString(sticker.team || sticker.time, 'Time Vermelho');
   const rarityStr = safeString(sticker.rarity || sticker.raridade, 'Normal');
 
-  // STRICTLY CLEAN payload containing ONLY the accepted table columns
   const cleanPayload = {
     id: id || undefined,
     numero: numInt,
@@ -219,7 +297,8 @@ export async function saveStickerToSupabase(sticker: Partial<Sticker> & { numero
     }
   }
 
-  const all = await getStickersFromSupabase();
+  invalidateCache('stickers');
+  const all = await getStickersFromSupabase(true);
   const localId = id || `stk-${Date.now()}`;
   const idx = all.findIndex(s => s.id === localId);
   const updatedSticker: Sticker = {
@@ -236,6 +315,7 @@ export async function saveStickerToSupabase(sticker: Partial<Sticker> & { numero
   if (idx >= 0) all[idx] = updatedSticker;
   else all.push(updatedSticker);
 
+  memoryCache.stickers = { data: all, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.STICKERS, JSON.stringify(all));
   return updatedSticker;
 }
@@ -248,24 +328,38 @@ export async function deleteStickerFromSupabase(id: string): Promise<boolean> {
       console.warn('[Supabase Delete Sticker Error]:', err);
     }
   }
-  const all = await getStickersFromSupabase();
+  invalidateCache('stickers');
+  const all = await getStickersFromSupabase(true);
   const filtered = all.filter(s => s.id !== id);
+  memoryCache.stickers = { data: filtered, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.STICKERS, JSON.stringify(filtered));
   return true;
 }
 
 // ---------------------------------------------------------------------------
-// 3. PLAYERS & USER PROFILES API
+// 3. PLAYERS & USER PROFILES API (Optimized Columns + In-Memory Cache)
 // ---------------------------------------------------------------------------
 
-export async function getPlayersFromSupabase(): Promise<Player[]> {
+export async function getPlayersFromSupabase(forceRefresh = false): Promise<Player[]> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache.players && (now - memoryCache.players.timestamp < CACHE_TTL.PLAYERS)) {
+    return memoryCache.players.data;
+  }
+
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase.from('players').select('*');
+      // Optimized player fields query
+      const { data, error } = await supabase
+        .from('players')
+        .select('id, full_name, fullName, nome, nickname, access_code, accessCode, code, codigo, password, password_hash, passwordHash, team, time, is_fan, isFan, photo_url, photoUrl, avatar_url, avatar, status, purchased_packs, purchasedPacks, creditos, free_packs, freePacks, packs_opened, packsOpened, opened_packs, recycles_count, recyclesCount, recycles, collected_stickers, collectedStickers, completed_album, completedAlbum, completed_at, completedAt, created_at, createdAt, last_access_at, lastAccessAt, championship_id');
 
       let userStickersMap: Record<string, Record<string, number>> = {};
       try {
-        const { data: sData, error: sError } = await supabase.from('user_stickers').select('*');
+        // Optimized: only select user_id, player_id, sticker_id and quantities
+        const { data: sData, error: sError } = await supabase
+          .from('user_stickers')
+          .select('user_id, player_id, sticker_id, quantidade, quantity');
+
         if (!sError && sData) {
           sData.forEach((row: any) => {
             const uId = safeString(row.user_id || row.userId || row.player_id || row.playerId);
@@ -282,7 +376,7 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
       }
 
       if (!error && data) {
-        return data.map((row: any) => {
+        const mappedPlayers: Player[] = data.map((row: any) => {
           const id = safeString(row.id);
           const getNum = (val: any, fallback: number) => {
             if (val !== undefined && val !== null && val !== '') {
@@ -323,6 +417,10 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
             championshipId: safeString(row.championship_id || row.championshipId || 'copa-astao-2026')
           };
         });
+
+        memoryCache.players = { data: mappedPlayers, timestamp: now };
+        localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(mappedPlayers));
+        return mappedPlayers;
       }
     } catch (err) {
       console.warn('[Supabase Players Fetch Error]:', err);
@@ -332,7 +430,9 @@ export async function getPlayersFromSupabase(): Promise<Player[]> {
   const saved = localStorage.getItem(STORAGE_KEYS.PLAYERS);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      memoryCache.players = { data: parsed, timestamp: now };
+      return parsed;
     } catch {}
   }
   return [];
@@ -395,14 +495,15 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
     }
   }
 
-  const players = await getPlayersFromSupabase();
+  invalidateCache('players');
+  const players = await getPlayersFromSupabase(true);
   const existingIdx = players.findIndex(p => p.id === id);
   const updatedPlayer: Player = {
     id,
     fullName: record.full_name,
     nickname: record.nickname,
     accessCode: code,
-    hasPassword: Boolean(playerData.password || existingIdx >= 0 && players[existingIdx].hasPassword),
+    hasPassword: Boolean(playerData.password || (existingIdx >= 0 && players[existingIdx].hasPassword)),
     team: record.team,
     isFan: record.is_fan,
     photoUrl: record.photo_url,
@@ -422,6 +523,7 @@ export async function savePlayerToSupabase(playerData: Partial<Player> & { passw
   if (existingIdx >= 0) players[existingIdx] = updatedPlayer;
   else players.push(updatedPlayer);
 
+  memoryCache.players = { data: players, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
   return updatedPlayer;
 }
@@ -434,8 +536,10 @@ export async function deletePlayerFromSupabase(id: string): Promise<boolean> {
       console.warn('[Supabase Player Delete Error]:', err);
     }
   }
-  const players = await getPlayersFromSupabase();
+  invalidateCache('players');
+  const players = await getPlayersFromSupabase(true);
   const filtered = players.filter(p => p.id !== id);
+  memoryCache.players = { data: filtered, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(filtered));
   return true;
 }
@@ -446,10 +550,10 @@ export async function getPlayerCollectedStickers(playerId: string): Promise<Reco
 
   if (isSupabaseConfigured && supabase) {
     try {
-      // Query user_stickers or player_stickers
+      // Optimized query requesting only sticker_id, quantidade, quantity for this specific user
       const { data, error } = await supabase
         .from('user_stickers')
-        .select('*')
+        .select('sticker_id, quantidade, quantity')
         .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
 
       if (!error && data && data.length > 0) {
@@ -467,7 +571,7 @@ export async function getPlayerCollectedStickers(playerId: string): Promise<Reco
     }
   }
 
-  // Fallback to player object
+  // Fallback to cached player object
   const players = await getPlayersFromSupabase();
   const player = players.find(p => p.id === playerId);
   return player?.collectedStickers || {};
@@ -501,7 +605,7 @@ export async function addStickersToPlayerCollection(
     }
   }
 
-  // Save to player object as backup
+  // Save to player object
   const players = await getPlayersFromSupabase();
   const player = players.find(p => p.id === playerId);
   if (player) {
@@ -541,10 +645,10 @@ export async function savePlayerStickers(
   }
 }
 
-export async function buildUserProfile(player: Player): Promise<UserProfile> {
-  const allStickers = await getStickersFromSupabase();
-  const collectedCounts = await getPlayerCollectedStickers(player.id);
-  const finalCounts = { ...(player.collectedStickers || {}), ...collectedCounts };
+// User Profile Builder (In-memory optimized calculation)
+export async function buildUserProfile(player: Player, providedStickers?: Sticker[]): Promise<UserProfile> {
+  const allStickers = providedStickers || await getStickersFromSupabase();
+  const finalCounts = player.collectedStickers || {};
 
   let uniqueStickers = 0;
   let repeatedStickers = 0;
@@ -614,15 +718,23 @@ export async function buildUserProfile(player: Player): Promise<UserProfile> {
 }
 
 // ---------------------------------------------------------------------------
-// 4. PRIZES / REWARDS API
+// 4. PRIZES / REWARDS API (Optimized Columns + In-Memory Cache)
 // ---------------------------------------------------------------------------
 
-export async function getPrizesFromSupabase(): Promise<Prize[]> {
+export async function getPrizesFromSupabase(forceRefresh = false): Promise<Prize[]> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache.prizes && (now - memoryCache.prizes.timestamp < CACHE_TTL.PRIZES)) {
+    return memoryCache.prizes.data;
+  }
+
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase.from('rewards').select('*');
+      const { data, error } = await supabase
+        .from('rewards')
+        .select('id, nome, name, descricao, description, imagem, image_url, imageUrl, quantidade, quantity, criterio, delivery_criteria, deliveryCriteria, created_at');
+
       if (!error && data && data.length > 0) {
-        return data.map((row: any) => ({
+        const mappedPrizes: Prize[] = data.map((row: any) => ({
           id: safeString(row.id),
           name: safeString(row.nome || row.name || 'Prêmio Exclusivo'),
           description: safeString(row.descricao || row.description || ''),
@@ -631,6 +743,10 @@ export async function getPrizesFromSupabase(): Promise<Prize[]> {
           deliveryCriteria: safeString(row.criterio || row.delivery_criteria || row.deliveryCriteria || 'Top do Ranking'),
           createdAt: row.created_at || new Date().toISOString()
         }));
+
+        memoryCache.prizes = { data: mappedPrizes, timestamp: now };
+        localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify(mappedPrizes));
+        return mappedPrizes;
       }
     } catch (err) {
       console.warn('[Supabase Rewards Fetch Error]:', err);
@@ -640,14 +756,18 @@ export async function getPrizesFromSupabase(): Promise<Prize[]> {
   const saved = localStorage.getItem(STORAGE_KEYS.PRIZES);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      memoryCache.prizes = { data: parsed, timestamp: now };
+      return parsed;
     } catch {}
   }
-  return [
+  const defaultPrizes: Prize[] = [
     { id: 'prize-1', name: '1 Mês de Futebol Grátis', description: 'Isenção da mensalidade por 30 dias', imageUrl: '/copa26.png', quantity: 1, deliveryCriteria: '1º Lugar Geral', createdAt: new Date().toISOString() },
     { id: 'prize-2', name: 'Camisa Oficial Aston Vina', description: 'Manto oficial do clube personalizado', imageUrl: '/copa26.png', quantity: 3, deliveryCriteria: 'Top 3 Colecionadores', createdAt: new Date().toISOString() },
     { id: 'prize-3', name: 'Boné Oficial Aston Vina', description: 'Boné exclusivo edição limitada', imageUrl: '/copa26.png', quantity: 5, deliveryCriteria: 'Sorteio entre concluintes', createdAt: new Date().toISOString() }
   ];
+  memoryCache.prizes = { data: defaultPrizes, timestamp: now };
+  return defaultPrizes;
 }
 
 export async function savePrizeToSupabase(prizeData: Partial<Prize>): Promise<Prize> {
@@ -675,7 +795,8 @@ export async function savePrizeToSupabase(prizeData: Partial<Prize>): Promise<Pr
     }
   }
 
-  const prizes = await getPrizesFromSupabase();
+  invalidateCache('prizes');
+  const prizes = await getPrizesFromSupabase(true);
   const idx = prizes.findIndex(p => p.id === id);
   const updatedPrize: Prize = {
     id,
@@ -690,6 +811,7 @@ export async function savePrizeToSupabase(prizeData: Partial<Prize>): Promise<Pr
   if (idx >= 0) prizes[idx] = updatedPrize;
   else prizes.push(updatedPrize);
 
+  memoryCache.prizes = { data: prizes, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify(prizes));
   return updatedPrize;
 }
@@ -702,24 +824,35 @@ export async function deletePrizeFromSupabase(id: string): Promise<boolean> {
       console.warn('[Supabase Reward Delete Error]:', err);
     }
   }
-  const prizes = await getPrizesFromSupabase();
+  invalidateCache('prizes');
+  const prizes = await getPrizesFromSupabase(true);
   const filtered = prizes.filter(p => p.id !== id);
+  memoryCache.prizes = { data: filtered, timestamp: Date.now() };
   localStorage.setItem(STORAGE_KEYS.PRIZES, JSON.stringify(filtered));
   return true;
 }
 
 // ---------------------------------------------------------------------------
-// 5. RANKING API
+// 5. RANKING API (Zero N+1, Computed In-Memory from Batch Data)
 // ---------------------------------------------------------------------------
 
-export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer[]; stats: RankingStats; firstChampion: FirstChampionInfo | null }> {
-  const players = await getPlayersFromSupabase();
-  const stickers = await getStickersFromSupabase();
+export async function getRankingFromSupabase(forceRefresh = false): Promise<{ ranking: RankingPlayer[]; stats: RankingStats; firstChampion: FirstChampionInfo | null }> {
+  const now = Date.now();
+  if (!forceRefresh && memoryCache.ranking && (now - memoryCache.ranking.timestamp < CACHE_TTL.RANKING)) {
+    return memoryCache.ranking.data;
+  }
+
+  // Load players and stickers in single, cached operations (No loop queries!)
+  const [players, stickers] = await Promise.all([
+    getPlayersFromSupabase(forceRefresh),
+    getStickersFromSupabase()
+  ]);
 
   const rankingPlayers: RankingPlayer[] = [];
 
   for (const player of players) {
-    const profile = await buildUserProfile(player);
+    // Pass preloaded stickers array so no secondary DB queries occur
+    const profile = await buildUserProfile(player, stickers);
 
     let completedAt = player.completedAt || profile.completedAt;
     const isGuiga = safeLower(player.nickname).includes('guiga') || safeLower(player.fullName).includes('guiga');
@@ -796,12 +929,16 @@ export async function getRankingFromSupabase(): Promise<{ ranking: RankingPlayer
     };
   }
 
-  return { ranking: rankingPlayers, stats, firstChampion };
+  const result = { ranking: rankingPlayers, stats, firstChampion };
+  memoryCache.ranking = { data: result, timestamp: now };
+  return result;
 }
 
 export async function getDashboardStatsFromSupabase(): Promise<DashboardStats> {
-  const players = await getPlayersFromSupabase();
-  const { ranking } = await getRankingFromSupabase();
+  const [players, { ranking }] = await Promise.all([
+    getPlayersFromSupabase(),
+    getRankingFromSupabase()
+  ]);
 
   const totalPlayers = players.length;
   const activePlayers = players.filter(p => p.status !== 'inactive').length;
@@ -993,7 +1130,10 @@ export async function openPackFromSupabase(playerId: string): Promise<{ stickers
     packsOpened: newPacksOpened
   });
 
-  const profile = await buildUserProfile(updatedPlayer);
+  invalidateCache('players');
+  invalidateCache('ranking');
+
+  const profile = await buildUserProfile(updatedPlayer, allStickers);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
   }
@@ -1048,7 +1188,10 @@ export async function claimRecyclePackFromSupabase(playerId: string): Promise<{ 
     recyclesCount: newRecyclesCount
   });
 
-  const profile = await buildUserProfile(updatedPlayer);
+  invalidateCache('players');
+  invalidateCache('ranking');
+
+  const profile = await buildUserProfile(updatedPlayer, allStickers);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
   }
@@ -1096,9 +1239,123 @@ export async function resetAllPlayersAlbumsInSupabase(): Promise<boolean> {
     console.error('Error triggering server reset endpoint:', err);
   }
 
+  invalidateCache('all');
+
   if (typeof window !== 'undefined') {
     localStorage.removeItem('copa_astao_collected_ids');
     localStorage.removeItem('copa_astao_user_stickers_v2');
+    window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
+  }
+
+  return true;
+}
+
+export async function resetPlayerAlbumInSupabase(playerId: string): Promise<boolean> {
+  if (isSupabaseConfigured && supabase) {
+    // a) Delete user_stickers
+    try {
+      await supabase
+        .from('user_stickers')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {
+      console.warn('[resetPlayerAlbumInSupabase] user_stickers delete error:', err);
+    }
+
+    // b) Clear user_packs / opened_packs
+    try {
+      await supabase
+        .from('opened_packs')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {}
+
+    try {
+      await supabase
+        .from('user_packs')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {}
+
+    try {
+      await supabase
+        .from('pack_open_logs')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {}
+
+    // c) Clear repeated stickers table if present
+    try {
+      await supabase
+        .from('user_repeated_stickers')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {}
+
+    try {
+      await supabase
+        .from('repeated_stickers')
+        .delete()
+        .or(`user_id.eq.${playerId},player_id.eq.${playerId}`);
+    } catch (err) {}
+
+    // d) Update players / profiles
+    try {
+      await supabase
+        .from('players')
+        .update({
+          collected_stickers: {},
+          completed_album: false,
+          completed_at: null,
+          packs_opened: 0,
+          recycles_count: 0,
+          repeat_stickers: 0,
+          completed_stickers: 0,
+          percentage_completed: 0,
+          is_winner: false
+        })
+        .eq('id', playerId);
+    } catch (err) {
+      console.warn('[resetPlayerAlbumInSupabase] players update error:', err);
+    }
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          percentage_completed: 0,
+          is_winner: false,
+          completed_at: null,
+          completed_album: false,
+          packs_opened: 0
+        })
+        .eq('id', playerId);
+    } catch (err) {}
+  }
+
+  // Trigger backend endpoint
+  try {
+    await fetch(`/api/admin/players/${playerId}/reset-album`, { method: 'POST' }).catch(() => {});
+  } catch (err) {
+    console.error('Error triggering reset album endpoint:', err);
+  }
+
+  invalidateCache('players');
+  invalidateCache('ranking');
+
+  // Update in-memory / local storage player object
+  const players = await getPlayersFromSupabase();
+  const player = players.find(p => p.id === playerId);
+  if (player) {
+    player.collectedStickers = {};
+    player.completedAlbum = false;
+    player.completedAt = null;
+    player.packsOpened = 0;
+    player.recyclesCount = 0;
+    await savePlayerToSupabase(player);
+  }
+
+  if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('copa_astao_data_updated'));
   }
 

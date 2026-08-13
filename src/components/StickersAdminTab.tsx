@@ -234,7 +234,7 @@ export default function StickersAdminTab({ stickers, onRefreshData }: StickersAd
 
             <div className="h-32 bg-black/40 rounded-xl overflow-hidden p-1 flex items-center justify-center border border-white/5">
               {stk.image ? (
-                <img src={stk.image} alt={stk.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                <img src={stk.image} alt={stk.name} className="w-full h-full object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               ) : (
                 <span className="text-[10px] text-gray-500 italic">Sem foto</span>
               )}

@@ -249,6 +249,8 @@ export default function ImageUploader({
                 src={preview}
                 alt="Preview"
                 className="w-full h-full object-contain"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
               />
               {uploading && (

@@ -469,7 +469,7 @@ function RewardsBannerSection({
                 systemPrizes.map((p) => (
                   <div key={p.id} className="p-6 bg-gradient-to-br from-brand-surface via-brand-dark to-black/90 border-2 border-amber-400/40 rounded-3xl flex flex-col items-center text-center gap-4 shadow-2xl hover:scale-[1.02] hover:border-amber-400 hover:shadow-amber-500/20 transition-all duration-300">
                     <div className="w-36 h-36 sm:w-44 sm:h-44 bg-black/60 rounded-2xl p-3 shrink-0 border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 flex items-center justify-center">
-                      <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" referrerPolicy="no-referrer" />
+                      <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                     </div>
                     <div className="space-y-3 flex-1 w-full flex flex-col items-center text-center">
                       <h4 className="font-display text-xl sm:text-2xl text-amber-300 font-bold uppercase tracking-wide whitespace-normal text-center my-1">{p.name}</h4>
@@ -531,27 +531,6 @@ export default function HomeTab({
   isRecycling
 }: HomeTabProps) {
   const { settings } = useSystemSettings();
-  const [countdown, setCountdown] = useState({ days: 4, hours: 12, minutes: 45, seconds: 32 });
-
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        } else {
-          return { days: 4, hours: 12, minutes: 45, seconds: 0 };
-        }
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <div className="space-y-10 pb-16" id="home-view">
@@ -647,6 +626,8 @@ export default function HomeTab({
               src={settings.logoUrl || "/copa26.png"} 
               alt="Copa Astão 2026 Logo Oficial" 
               className="w-full h-full object-contain rounded-2xl drop-shadow-[0_10px_30px_rgba(254,207,46,0.3)]"
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
             />
           </motion.div>
@@ -667,6 +648,8 @@ export default function HomeTab({
               src={userProfile.photoUrl || '/copa26.png'} 
               alt={userProfile.nickname} 
               className="w-16 h-16 rounded-2xl object-cover border-2 border-brand-gold shadow-md"
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
             />
             <div className="text-left flex-1">

@@ -31,7 +31,8 @@ import {
   savePlayerToSupabase, 
   deletePlayerFromSupabase, 
   buildUserProfile,
-  resetAllPlayersAlbumsInSupabase
+  resetAllPlayersAlbumsInSupabase,
+  resetPlayerAlbumInSupabase
 } from '../lib/supabaseData';
 
 
@@ -52,9 +53,11 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [creditsPlayer, setCreditsPlayer] = useState<Player | null>(null);
   const [resetPassPlayer, setResetPassPlayer] = useState<Player | null>(null);
+  const [resetAlbumPlayer, setResetAlbumPlayer] = useState<Player | null>(null);
   const [qrPlayer, setQrPlayer] = useState<Player | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [viewingPlayerProfile, setViewingPlayerProfile] = useState<{ player: Player; profile: UserProfile } | null>(null);
+  const [isResettingSingle, setIsResettingSingle] = useState(false);
 
   // Form States
   const [addForm, setAddForm] = useState({
@@ -121,6 +124,36 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
       setErrorMsg('Erro ao resetar os álbuns: ' + (err.message || 'Erro desconhecido'));
     } finally {
       setIsResettingAll(false);
+    }
+  };
+
+  // Reset Single Player Album Function
+  const handleConfirmResetPlayerAlbum = async () => {
+    if (!resetAlbumPlayer) return;
+    setIsResettingSingle(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      await resetPlayerAlbumInSupabase(resetAlbumPlayer.id);
+
+      setPlayers(prev => prev.map(p => p.id === resetAlbumPlayer.id ? {
+        ...p,
+        collectedStickers: {},
+        completedAlbum: false,
+        completedAt: null,
+        packsOpened: 0,
+        recyclesCount: 0
+      } : p));
+
+      onRefreshData();
+      setSuccessMsg(`Álbum do jogador ${resetAlbumPlayer.nickname} resetado com sucesso!`);
+      setResetAlbumPlayer(null);
+    } catch (err: any) {
+      console.error('Erro ao resetar álbum do jogador:', err);
+      setErrorMsg('Erro ao resetar o álbum do jogador: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setIsResettingSingle(false);
     }
   };
 
@@ -484,6 +517,8 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                             src={p.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'}
                             alt={p.nickname}
                             className="w-9 h-9 rounded-full object-cover border border-white/10"
+                            loading="lazy"
+                            decoding="async"
                             referrerPolicy="no-referrer"
                           />
                           <div>
@@ -611,6 +646,15 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                             className="p-1.5 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded-lg transition-all"
                           >
                             <Key className="w-4 h-4 text-amber-400" />
+                          </button>
+
+                          {/* Zerar Álbum */}
+                          <button
+                            onClick={() => setResetAlbumPlayer(p)}
+                            title="Zerar Álbum / Resetar Progresso"
+                            className="p-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 hover:text-orange-300 rounded-lg transition-all"
+                          >
+                            <RotateCcw className="w-4 h-4" />
                           </button>
 
                           {/* Edit Player */}
@@ -1090,6 +1134,55 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
         </div>
       )}
 
+      {/* MODAL: RESET SINGLE PLAYER ALBUM CONFIRMATION */}
+      {resetAlbumPlayer && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-brand-surface border border-red-500/30 p-6 rounded-2xl w-full max-w-md space-y-5 relative text-left shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-red-400">
+                <ShieldAlert className="w-5 h-5" />
+                <h3 className="font-display font-bold text-lg text-white">Zerar Álbum de Jogador</h3>
+              </div>
+              <button 
+                onClick={() => setResetAlbumPlayer(null)} 
+                className="text-gray-400 hover:text-white p-1 rounded-lg bg-white/5"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm text-gray-200 leading-relaxed">
+                Tem certeza que deseja zerar 100% do progresso e figurinhas do jogador <strong className="text-white">{resetAlbumPlayer.fullName || resetAlbumPlayer.nickname}</strong>? Esta ação não poderá ser desfeita.
+              </p>
+              <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-xs text-red-300">
+                ⚠️ Serão apagadas todas as figurinhas coladas, repetidas, inventário e histórico de pacotes abertos do jogador.
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setResetAlbumPlayer(null)}
+                disabled={isResettingSingle}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl transition-all uppercase"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmResetPlayerAlbum}
+                disabled={isResettingSingle}
+                className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-red-600/20 disabled:opacity-50"
+              >
+                <RotateCcw className="w-4 h-4" />
+                {isResettingSingle ? 'Resetando...' : 'Zerar Álbum'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL 5: QR CODE VIEW */}
       {qrPlayer && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1153,6 +1246,8 @@ export default function PlayersAdminTab({ stickers, onRefreshData }: PlayersAdmi
                 src={viewingPlayerProfile.player.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'} 
                 alt={viewingPlayerProfile.player.nickname} 
                 className="w-16 h-16 rounded-full object-cover border-2 border-brand-gold"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
               />
               <div>

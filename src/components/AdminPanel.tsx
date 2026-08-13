@@ -989,7 +989,7 @@ export default function AdminPanel({
             {championships.map((champ) => (
               <div key={champ.id} className="bg-brand-surface border border-white/10 p-6 rounded-2xl space-y-4 relative overflow-hidden flex flex-col justify-between">
                 <div className="flex items-start gap-4">
-                  <img src={champ.logoUrl || '/escudo3atual2.png'} alt={champ.name} className="w-14 h-14 object-contain rounded-xl bg-black/40 p-1 border border-white/10" referrerPolicy="no-referrer" />
+                  <img src={champ.logoUrl || '/escudo3atual2.png'} alt={champ.name} className="w-14 h-14 object-contain rounded-xl bg-black/40 p-1 border border-white/10" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   <div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                       champ.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-500/20 text-gray-400'
@@ -1259,7 +1259,7 @@ export default function AdminPanel({
             {prizes.map((p) => (
               <div key={p.id} className="bg-gradient-to-br from-brand-surface via-brand-dark to-black/90 border-2 border-amber-400/40 p-6 sm:p-7 rounded-3xl flex flex-col items-center text-center gap-3 shadow-2xl hover:scale-105 hover:border-amber-400 hover:shadow-amber-500/20 transition-all duration-300 relative overflow-hidden group">
                 <div className="w-36 h-36 sm:w-44 sm:h-44 bg-black/60 rounded-2xl overflow-hidden p-3 flex items-center justify-center border-2 border-amber-400/80 shadow-lg shadow-amber-500/20 group-hover:scale-[1.03] transition-transform duration-300 shrink-0">
-                  <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" referrerPolicy="no-referrer" />
+                  <img src={p.imageUrl || '/copa26.png'} alt={p.name} className="w-full h-full object-contain drop-shadow-md" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 </div>
                 <h3 className="font-display text-xl font-bold text-white uppercase tracking-wide group-hover:text-amber-300 transition-colors my-1 whitespace-normal text-center">{p.name}</h3>
                 

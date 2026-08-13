@@ -42,6 +42,8 @@ export default function Navbar({
                 src={settings.logoUrl || "/escudo3atual2.png"} 
                 alt="Logo da Copa" 
                 className="w-full h-full object-cover scale-110"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
               />
             </div>

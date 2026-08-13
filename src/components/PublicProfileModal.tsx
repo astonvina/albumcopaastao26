@@ -123,6 +123,8 @@ export default function PublicProfileModal({
                     src={profile.photoUrl || '/escudo3atual2.png'}
                     alt={profile.nickname}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';

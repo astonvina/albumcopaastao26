@@ -264,6 +264,8 @@ export default function PackOpening({
                     src={packCover} 
                     alt="Copa Astão 2026" 
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                   />
                 </div>

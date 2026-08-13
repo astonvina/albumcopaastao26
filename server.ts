@@ -354,6 +354,21 @@ app.post('/api/admin/players/:id/reset-password', (req, res) => {
   }
 });
 
+// Reset Player Album / Progress
+app.post('/api/admin/players/:id/reset-album', (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = dbInstance.resetPlayerAlbum(id);
+    if (result.success) {
+      res.json({ success: true, message: 'Álbum do jogador resetado com sucesso.' });
+    } else {
+      res.status(404).json({ success: false, error: 'Jogador não encontrado.' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Adjust Player Pack Credits
 app.post('/api/admin/players/:id/credits', (req, res) => {
   try {

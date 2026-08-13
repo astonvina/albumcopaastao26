@@ -585,6 +585,32 @@ export class Database {
     return { success: true };
   }
 
+  public resetPlayerAlbum(id: string): { success: boolean; player?: Player } {
+    const db = this.load();
+    const player = db.players.find(p => p.id === id);
+    if (!player) return { success: false };
+
+    player.collectedStickers = {};
+    player.completedAlbum = false;
+    player.completedAt = null;
+    player.packsOpened = 0;
+    player.recyclesCount = 0;
+
+    if (db.packOpenLogs) {
+      db.packOpenLogs = db.packOpenLogs.filter(l => l.playerId !== id);
+    }
+    if (db.recycleLogs) {
+      db.recycleLogs = db.recycleLogs.filter(l => l.playerId !== id);
+    }
+    if (db.firstChampion && db.firstChampion.playerId === id) {
+      db.firstChampion = null;
+    }
+
+    this.save(db);
+    this.addLog('PLAYER_ALBUM_RESET', `Álbum do jogador '${player.nickname}' foi resetado pelo administrador.`);
+    return { success: true, player };
+  }
+
   // PACK CREDITS ADJUSTMENT (ADMIN "PACOTES")
   public adjustPlayerPacks(
     playerId: string,

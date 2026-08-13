@@ -143,6 +143,8 @@ export default function Card3D({
             src={sticker.image} 
             alt={sticker.name || 'Figurinha'} 
             className="absolute inset-0 w-full h-full object-cover filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] transition-transform duration-500 hover:scale-[1.05]"
+            loading="lazy"
+            decoding="async"
             referrerPolicy="no-referrer"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/copa26.png';
