@@ -47,7 +47,7 @@ export default function RankingTab({ onNavigateToAlbum }: RankingTabProps) {
   const fetchRanking = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     try {
-      const { ranking, stats: rankingStats, firstChampion: championInfo } = await getRankingFromSupabase();
+      const { ranking, stats: rankingStats, firstChampion: championInfo } = await getRankingFromSupabase(isManualRefresh);
       setLeaderboard(ranking || []);
       setStats(rankingStats || null);
       
